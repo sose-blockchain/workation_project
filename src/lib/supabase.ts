@@ -30,13 +30,14 @@ export type Database = {
         Row: {
           id: string
           name: string
-          description: string | null
-          token_name: string | null
           token_symbol: string | null
+          description: string | null
           homepage_url: string | null
           whitepaper_url: string | null
           docs_url: string | null
           blog_url: string | null
+          project_twitter_url: string | null
+          team_twitter_urls: string[] | null
           ai_summary: string | null
           ai_keywords: string[] | null
           status: string
@@ -46,13 +47,14 @@ export type Database = {
         Insert: {
           id?: string
           name: string
-          description?: string | null
-          token_name?: string | null
           token_symbol?: string | null
+          description?: string | null
           homepage_url?: string | null
           whitepaper_url?: string | null
           docs_url?: string | null
           blog_url?: string | null
+          project_twitter_url?: string | null
+          team_twitter_urls?: string[] | null
           ai_summary?: string | null
           ai_keywords?: string[] | null
           status?: string
@@ -62,13 +64,14 @@ export type Database = {
         Update: {
           id?: string
           name?: string
-          description?: string | null
-          token_name?: string | null
           token_symbol?: string | null
+          description?: string | null
           homepage_url?: string | null
           whitepaper_url?: string | null
           docs_url?: string | null
           blog_url?: string | null
+          project_twitter_url?: string | null
+          team_twitter_urls?: string[] | null
           ai_summary?: string | null
           ai_keywords?: string[] | null
           status?: string

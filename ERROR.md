@@ -115,6 +115,24 @@
 
 ---
 
+## 2025-01-27 - Vercel TypeScript 컴파일 오류 (Major)
+
+### 오류 내용
+- 오류 메시지: `'token_name' does not exist in type 'CreateProjectRequest'`
+- 발생 상황: Vercel 빌드 중 TypeScript 컴파일 시
+- 영향 범위: 프로젝트 배포 실패
+
+### 해결 방법
+1. ProjectForm.tsx 컴포넌트 삭제 (더 이상 사용하지 않음)
+2. Supabase 데이터베이스 타입 업데이트
+3. 새로운 스키마에 맞게 타입 정의 수정
+
+### 예방 방법
+- 스키마 변경 시 관련 컴포넌트 일괄 업데이트
+- TypeScript 타입 체크 정기적 실행
+
+---
+
 ## 🛠️ 일반적인 오류 해결 방법
 
 ### Node.js 관련
