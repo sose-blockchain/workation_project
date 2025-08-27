@@ -11,6 +11,11 @@ export default function ResearchPage() {
   const [message, setMessage] = useState('')
 
   const handleSubmit = async (data: CreateProjectRequest) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
     setIsLoading(true)
     setMessage('')
     
@@ -42,6 +47,11 @@ export default function ResearchPage() {
   }
 
   const loadProjects = async () => {
+    if (!supabase) {
+      console.warn('Supabase is not initialized')
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('projects')

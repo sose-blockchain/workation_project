@@ -79,6 +79,24 @@
 
 ---
 
+## 2025-01-27 - Vercel Supabase 환경 변수 오류 (Critical)
+
+### 오류 내용
+- 오류 메시지: `supabaseUrl is required.`
+- 발생 상황: Vercel 빌드 중 정적 페이지 생성 시
+- 영향 범위: 프로젝트 배포 실패
+
+### 해결 방법
+1. Vercel 대시보드에서 환경 변수 확인
+2. NEXT_PUBLIC_SUPABASE_URL과 NEXT_PUBLIC_SUPABASE_ANON_KEY 설정
+3. 빌드 시 환경 변수 접근 방식 수정
+
+### 예방 방법
+- 환경 변수 설정 후 배포 전 로컬 테스트
+- Vercel 환경 변수 설정 확인
+
+---
+
 ## 🛠️ 일반적인 오류 해결 방법
 
 ### Node.js 관련
