@@ -1,50 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import ProjectForm from '@/components/ProjectForm'
-import { CreateProjectRequest, Project } from '@/types/project'
+import { useState, useEffect } from 'react'
+import ProjectSearch from '@/components/ProjectSearch'
+import ProjectDetail from '@/components/ProjectDetail'
+import { Project, CreateProjectRequest, UpdateProjectRequest } from '@/types/project'
 import { supabase } from '@/lib/supabase'
+import { searchProjectInfo } from '@/lib/gemini'
 
 export default function ResearchPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [message, setMessage] = useState('')
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
-  const handleSubmit = async (data: CreateProjectRequest) => {
-    if (!supabase) {
-      setMessage('Supabase 연결이 설정되지 않았습니다.')
-      return
-    }
-
-    setIsLoading(true)
-    setMessage('')
-    
-    try {
-      const { data: newProject, error } = await supabase
-        .from('projects')
-        .insert([data])
-        .select()
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      setMessage('프로젝트가 성공적으로 저장되었습니다!')
-      setProjects(prev => [newProject, ...prev])
-      
-      // 폼 초기화를 위해 페이지 새로고침
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
-      
-    } catch (error) {
-      console.error('Error saving project:', error)
-      setMessage('프로젝트 저장 중 오류가 발생했습니다.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // 컴포넌트 마운트 시 프로젝트 목록 로드
+  useEffect(() => {
+    loadProjects()
+  }, [])
 
   const loadProjects = async () => {
     if (!supabase) {
@@ -68,23 +40,118 @@ export default function ResearchPage() {
     }
   }
 
-  // 컴포넌트 마운트 시 프로젝트 목록 로드
-  useState(() => {
-    loadProjects()
-  })
+  const handleSearch = async (projectName: string) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      // AI로 프로젝트 정보 검색
+      const projectInfo = await searchProjectInfo(projectName)
+      
+      // 데이터베이스에 저장
+      const { data: newProject, error } = await supabase
+        .from('projects')
+        .insert([projectInfo])
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      setMessage('프로젝트가 성공적으로 저장되었습니다!')
+      setProjects(prev => [newProject, ...prev])
+      
+      // 3초 후 메시지 제거
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error searching and saving project:', error)
+      setMessage('프로젝트 검색 및 저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdate = async (data: UpdateProjectRequest) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update(data)
+        .eq('id', data.id)
+
+      if (error) {
+        throw error
+      }
+
+      setMessage('프로젝트가 성공적으로 수정되었습니다!')
+      await loadProjects() // 목록 새로고침
+      
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error updating project:', error)
+      setMessage('프로젝트 수정 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+
+      setMessage('프로젝트가 성공적으로 삭제되었습니다!')
+      await loadProjects() // 목록 새로고침
+      setSelectedProject(null)
+      
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      setMessage('프로젝트 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            프로젝트 리서치
-          </h1>
-          <p className="text-lg text-gray-600">
-            블록체인 프로젝트 정보를 입력하고 AI 분석을 시작하세요
-          </p>
-        </div>
-
         {/* 메시지 표시 */}
         {message && (
           <div className={`mb-6 p-4 rounded-md ${
@@ -96,15 +163,19 @@ export default function ResearchPage() {
           </div>
         )}
 
-        {/* 프로젝트 입력 폼 */}
-        <ProjectForm onSubmit={handleSubmit} isLoading={isLoading} />
+        {/* 프로젝트 검색 */}
+        <ProjectSearch onSearch={handleSearch} isLoading={isLoading} />
 
         {/* 프로젝트 목록 */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">저장된 프로젝트</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <div key={project.id} className="bg-white rounded-lg shadow-md p-6">
+              <div 
+                key={project.id} 
+                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setSelectedProject(project)}
+              >
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {project.name}
                 </h3>
@@ -139,6 +210,17 @@ export default function ResearchPage() {
             </div>
           )}
         </div>
+
+        {/* 프로젝트 상세 모달 */}
+        {selectedProject && (
+          <ProjectDetail
+            project={selectedProject}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+            onClose={() => setSelectedProject(null)}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </div>
   )

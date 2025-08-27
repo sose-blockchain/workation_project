@@ -3,13 +3,21 @@ import { createClient } from '@supabase/supabase-js'
 // 클라이언트 사이드에서만 Supabase 클라이언트 생성
 let supabase: any = null
 
-if (typeof window !== 'undefined') {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  
-  if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey)
+const createSupabaseClient = () => {
+  if (typeof window !== 'undefined') {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      return createClient(supabaseUrl, supabaseAnonKey)
+    }
   }
+  return null
+}
+
+// 클라이언트 사이드에서만 초기화
+if (typeof window !== 'undefined') {
+  supabase = createSupabaseClient()
 }
 
 export { supabase }

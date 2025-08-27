@@ -1,13 +1,14 @@
 export interface Project {
   id: string;
   name: string;
-  description?: string;
-  token_name?: string;
   token_symbol?: string;
+  description?: string;
   homepage_url?: string;
   whitepaper_url?: string;
   docs_url?: string;
   blog_url?: string;
+  project_twitter_url?: string;
+  team_twitter_urls?: string[];
   ai_summary?: string;
   ai_keywords?: string[];
   status: 'active' | 'inactive' | 'archived';
@@ -17,13 +18,18 @@ export interface Project {
 
 export interface CreateProjectRequest {
   name: string;
-  description?: string;
-  token_name?: string;
   token_symbol?: string;
+  description?: string;
   homepage_url?: string;
   whitepaper_url?: string;
   docs_url?: string;
   blog_url?: string;
+  project_twitter_url?: string;
+  team_twitter_urls?: string[];
+}
+
+export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {
+  id: string;
 }
 
 export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {
