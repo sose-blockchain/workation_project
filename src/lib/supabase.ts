@@ -1,0 +1,108 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Database types
+export type Database = {
+  public: {
+    Tables: {
+      projects: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          token_name: string | null
+          token_symbol: string | null
+          homepage_url: string | null
+          whitepaper_url: string | null
+          docs_url: string | null
+          blog_url: string | null
+          ai_summary: string | null
+          ai_keywords: string[] | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          token_name?: string | null
+          token_symbol?: string | null
+          homepage_url?: string | null
+          whitepaper_url?: string | null
+          docs_url?: string | null
+          blog_url?: string | null
+          ai_summary?: string | null
+          ai_keywords?: string[] | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          token_name?: string | null
+          token_symbol?: string | null
+          homepage_url?: string | null
+          whitepaper_url?: string | null
+          docs_url?: string | null
+          blog_url?: string | null
+          ai_summary?: string | null
+          ai_keywords?: string[] | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      sns_accounts: {
+        Row: {
+          id: string
+          project_id: string
+          platform: string
+          account_handle: string
+          account_name: string | null
+          account_url: string | null
+          follower_count: number
+          following_count: number
+          post_count: number
+          ai_engagement_score: number | null
+          last_updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          platform: string
+          account_handle: string
+          account_name?: string | null
+          account_url?: string | null
+          follower_count?: number
+          following_count?: number
+          post_count?: number
+          ai_engagement_score?: number | null
+          last_updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          platform?: string
+          account_handle?: string
+          account_name?: string | null
+          account_url?: string | null
+          follower_count?: number
+          following_count?: number
+          post_count?: number
+          ai_engagement_score?: number | null
+          last_updated_at?: string
+          created_at?: string
+        }
+      }
+    }
+  }
+}
