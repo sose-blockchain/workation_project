@@ -61,6 +61,24 @@
 
 ---
 
+## 2025-01-27 - Vercel Next.js 설정 오류 (Major)
+
+### 오류 내용
+- 오류 메시지: `No Output Directory named "build" found after the Build completed`
+- 발생 상황: Vercel에서 Next.js 14 프로젝트 배포 중
+- 영향 범위: 프로젝트 배포 실패
+
+### 해결 방법
+1. next.config.js에서 deprecated된 `appDir` 설정 제거
+2. Vercel 프로젝트 설정에서 Output Directory를 `.next`로 변경
+3. Build Command를 `npm run build`로 설정
+
+### 예방 방법
+- Next.js 버전에 맞는 설정 파일 사용
+- Vercel 프로젝트 설정에서 올바른 출력 디렉토리 지정
+
+---
+
 ## 🛠️ 일반적인 오류 해결 방법
 
 ### Node.js 관련
