@@ -5,6 +5,7 @@ import { Project, UpdateProjectRequest } from '@/types/project'
 import { Investment } from '@/types/investment'
 import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
 import PremiumInvestmentNotice from './PremiumInvestmentNotice'
+import TwitterInfo from './TwitterInfo'
 
 
 interface ProjectDetailProps {
@@ -599,6 +600,14 @@ export default function ProjectDetail({
               {/* 투자 정보 섹션 */}
               <div className="pt-4 border-t">
                 <PremiumInvestmentNotice projectId={project.id} />
+              </div>
+
+              {/* 트위터 정보 섹션 */}
+              <div className="pt-4 border-t">
+                <TwitterInfo 
+                  projectId={project.id}
+                  twitterUrl={project.detected_twitter_url}
+                />
               </div>
 
               <div className="pt-4 border-t">

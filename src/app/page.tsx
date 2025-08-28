@@ -8,6 +8,7 @@ import SearchImprovements from '@/components/SearchImprovements'
 import { Project, CreateProjectRequest, UpdateProjectRequest } from '@/types/project'
 import { supabase } from '@/lib/supabase'
 import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
+import { twitterService, TwitterService } from '@/lib/twitterService'
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -72,11 +73,36 @@ export default function HomePage() {
       // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
       // CryptoRank Pro 구독 시 투자 라운드 데이터 저장 예정
 
-      const successMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
+      // 2. 트위터 정보가 발견된 경우 자동으로 수집
+      let twitterMessage = '';
+      if (enhancedResult.project.detected_twitter_url) {
+        try {
+          const handle = TwitterService.extractTwitterHandle(enhancedResult.project.detected_twitter_url);
+          if (handle) {
+            console.log(`🐦 트위터 계정 자동 수집 시작: @${handle}`);
+            const twitterResult = await twitterService.createOrUpdateTwitterAccount({
+              project_id: newProject.id,
+              screen_name: handle,
+              fetch_timeline: true
+            });
+            
+            if (twitterResult.found && twitterResult.account) {
+              twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
+              console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
+            } else {
+              console.warn(`⚠️ 트위터 계정 수집 실패: @${handle}`);
+            }
+          }
+        } catch (twitterError) {
+          console.error('트위터 정보 자동 수집 중 오류:', twitterError);
+        }
+      }
+
+      const baseMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
         ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API로 정확한 프로젝트명/심볼 확인)'
         : '프로젝트가 성공적으로 저장되었습니다!';
       
-      setMessage(successMessage)
+      setMessage(baseMessage + twitterMessage)
       setProjects(prev => [newProject, ...prev])
       
       // 3초 후 메시지 제거
@@ -194,7 +220,7 @@ export default function HomePage() {
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             {message}
-          </div>
+        </div>
         )}
 
         {/* Google 스타일 중앙 정렬 검색 */}
@@ -225,7 +251,7 @@ export default function HomePage() {
               </div>
             </div>
           )}
-        </div>
+            </div>
 
         {/* 하단 링크 */}
         <div className="py-3 bg-gray-50 border-t">

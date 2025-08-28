@@ -8,6 +8,7 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS keyword1 text;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS keyword2 text;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS keyword3 text;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_url text;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS detected_twitter_url text;
 
 -- 2️⃣ market_data 테이블 생성 (기존 컬럼과 충돌 방지)
 CREATE TABLE IF NOT EXISTS market_data (

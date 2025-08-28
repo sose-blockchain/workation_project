@@ -139,7 +139,10 @@ git push origin main
 ### ✅ 완료된 작업
 - [x] **CryptoRank API 연동**: 프로젝트명/토큰 심볼 데이터 수집
 - [x] **투자 정보 프리미엄화**: AI 기반 투자 데이터를 프리미엄 서비스 안내로 교체
-- [x] **컴포넌트 구조 개선**: `PremiumInvestmentNotice.tsx` 신규 생성
+- [x] **트위터 정보 자동 수집**: AI 검색에서 트위터 URL 자동 탐지 및 정보 수집
+- [x] **트위터 정보 표시**: 프로필, 팔로워, 타임라인, 활동도 점수 표시
+- [x] **정규화된 DB 구조**: 별도 트위터 테이블로 분리 설계
+- [x] **컴포넌트 구조 개선**: `TwitterInfo.tsx`, `PremiumInvestmentNotice.tsx` 신규 생성
 - [x] **캐시 무효화 시스템**: 동적 키를 통한 강제 렌더링 구현
 - [x] **로컬 개발 환경**: Rate Limit 우회를 위한 로컬 서버 설정
 
@@ -152,12 +155,17 @@ NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 
 # 신규 추가 (2025-01-28)
 NEXT_PUBLIC_CRYPTORANK_API_KEY=your_cryptorank_api_key
+NEXT_PUBLIC_TWITTER_API_KEY=your_rapidapi_twitter_key
+NEXT_PUBLIC_TWITTER_API_HOST=twitter-api45.p.rapidapi.com
 ```
 
 ### 📋 배포 후 확인사항 업데이트
 - [x] **투자 정보 섹션**: 프리미엄 안내 메시지 정상 표시
 - [x] **CryptoRank 연동**: 프로젝트 검색 시 정확한 이름/심볼 확인
-- [x] **캐시 무효화**: "Updated 2025.1.28 v2" 버전 태그 확인
+- [x] **트위터 정보 수집**: AI 검색에서 트위터 URL 자동 탐지 및 수집
+- [x] **트위터 정보 표시**: 프로필, 팔로워, 타임라인 정상 표시
+- [x] **활동도 점수**: 0-100 점수 계산 및 표시
+- [x] **캐시 무효화**: "Updated 2025.1.28 v3" 버전 태그 확인
 - [ ] **모바일 최적화**: 프리미엄 안내 UI 반응형 확인
 
 ### ⚠️ 주의사항 추가

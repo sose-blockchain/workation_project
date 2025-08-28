@@ -1,12 +1,15 @@
 import { searchProjectInfo } from './gemini';
 import { cryptoRankAPI } from './cryptorank';
+import { twitterService, TwitterService } from './twitterService';
 
 interface EnhancedProjectResult {
   project: any;
   investment_rounds: any[] | null;
+  twitter_account_id?: string | null;
   data_sources: {
     basic_info: string;
     investment_data: string;
+    twitter_data?: string;
   };
 }
 
@@ -28,7 +31,7 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
     console.log('Gemini AI result received');
 
     // 3. CryptoRank에서 가져온 정보로 AI 결과 보완
-    let finalProject = aiResult.project;
+    let finalProject: any = { ...aiResult.project };
     let basicInfoSource = 'Gemini AI';
 
     if (cryptoRankProject) {
@@ -42,12 +45,46 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       console.log(`CryptoRank에서 정확한 프로젝트 정보 보완: ${cryptoRankProject.name} (${cryptoRankProject.symbol})`);
     }
 
+    // 4. 트위터 정보 수집 (AI 검색 결과에서 트위터 URL 추출)
+    let twitterAccountId = null;
+    let twitterDataSource = null;
+    
+    try {
+      // AI 검색 결과에서 트위터 URL 찾기
+      const twitterUrls = [
+        aiResult.project.project_twitter_url,
+        ...(aiResult.project.team_twitter_urls || []),
+        // 추가 필드에서 트위터 URL 찾기
+        ...[
+          aiResult.project.homepage_url,
+          aiResult.project.blog_url,
+          aiResult.project.github_url
+        ].filter((url: string) => url && (url.includes('twitter.com') || url.includes('x.com')))
+      ].filter(Boolean);
+
+      if (twitterUrls.length > 0) {
+        const twitterUrl = twitterUrls[0]; // 첫 번째 트위터 URL 사용
+        const handle = TwitterService.extractTwitterHandle(twitterUrl);
+        
+        if (handle) {
+          console.log(`트위터 계정 발견: @${handle}`);
+          // 프로젝트가 저장된 후에 트위터 정보를 수집하기 위해 URL만 저장
+          finalProject.detected_twitter_url = twitterUrl;
+          twitterDataSource = 'AI 검색 결과에서 추출';
+        }
+      }
+    } catch (twitterError) {
+      console.warn('트위터 정보 추출 중 오류:', twitterError);
+    }
+
     const result: EnhancedProjectResult = {
       project: finalProject,
       investment_rounds: null, // 투자 라운드 데이터 수집 비활성화
+      twitter_account_id: twitterAccountId,
       data_sources: {
         basic_info: basicInfoSource,
-        investment_data: '프리미엄 서비스 예정' // 투자 데이터는 프리미엄 서비스
+        investment_data: '프리미엄 서비스 예정', // 투자 데이터는 프리미엄 서비스
+        twitter_data: twitterDataSource || undefined
       }
     };
 
