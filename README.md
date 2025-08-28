@@ -10,6 +10,13 @@
 - SNS 데이터 분석을 통한 프로젝트 영향도 측정
 - 노션 연동을 통한 체계적인 리서치 문서 생성
 
+### ✨ 새로운 기능들 (v1.1.0)
+- **Google 스타일 UI**: 깔끔하고 직관적인 인터페이스
+- **접고 펼 수 있는 사이드바**: 프로젝트 관리를 위한 모달 사이드바
+- **고급 URL 검증**: 오래된 링크 자동 감지 및 신뢰도 분석
+- **검색 품질 분석**: AI 기반 프로젝트 정보 품질 평가
+- **실시간 개선 제안**: 데이터 품질 향상을 위한 구체적 가이드
+
 ## 🚀 기술 스택
 
 ### Frontend
@@ -167,26 +174,37 @@ npm run build
 `.env.local` 파일에 다음 환경 변수들을 설정하세요:
 
 ```env
-# Supabase
+# Supabase (필수)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Gemini API
-GEMINI_API_KEY=your_gemini_api_key
+# Gemini AI (필수)
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 
-# Twitter API
+# Twitter API (선택 - SNS 기능용)
 TWITTER_BEARER_TOKEN=your_twitter_bearer_token
 TWITTER_API_KEY=your_twitter_api_key
 TWITTER_API_SECRET=your_twitter_api_secret
 
-# Notion API
+# Notion API (선택 - 문서 생성용)
 NOTION_API_KEY=your_notion_api_key
 NOTION_DATABASE_ID=your_notion_database_id
 
-# Vercel
-VERCEL_URL=your_vercel_url
+# 개발 환경
+NODE_ENV=development
 ```
+
+### 🔑 API 키 발급 방법
+
+#### Supabase 설정
+1. [Supabase](https://supabase.com) 계정 생성
+2. 새 프로젝트 생성
+3. Settings > API에서 URL과 anon key 복사
+
+#### Gemini API 설정
+1. [Google AI Studio](https://makersuite.google.com/app/apikey) 접속
+2. API 키 생성
+3. 생성된 키를 환경 변수에 설정
 
 ## 📦 프로젝트 구조
 

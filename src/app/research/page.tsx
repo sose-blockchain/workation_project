@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import ProjectSearch from '@/components/ProjectSearch'
 import ProjectDetail from '@/components/ProjectDetail'
+import ProjectSidebar from '@/components/ProjectSidebar'
+import SearchImprovements from '@/components/SearchImprovements'
 import { Project, CreateProjectRequest, UpdateProjectRequest } from '@/types/project'
 import { supabase } from '@/lib/supabase'
 import { searchProjectInfo } from '@/lib/gemini'
@@ -150,11 +152,19 @@ export default function ResearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white">
+      {/* 사이드바 */}
+      <ProjectSidebar 
+        projects={projects}
+        onProjectSelect={setSelectedProject}
+        selectedProject={selectedProject}
+      />
+
+      {/* 메인 컨텐츠 */}
+      <div className="min-h-screen flex flex-col">
         {/* 메시지 표시 */}
         {message && (
-          <div className={`mb-6 p-4 rounded-md ${
+          <div className={`mx-4 mt-4 p-4 rounded-md ${
             message.includes('성공') 
               ? 'bg-green-50 text-green-800 border border-green-200' 
               : 'bg-red-50 text-red-800 border border-red-200'
@@ -163,65 +173,61 @@ export default function ResearchPage() {
           </div>
         )}
 
-        {/* 프로젝트 검색 */}
-        <ProjectSearch onSearch={handleSearch} isLoading={isLoading} />
-
-        {/* 프로젝트 목록 */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">저장된 프로젝트</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <div 
-                key={project.id} 
-                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setSelectedProject(project)}
-              >
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {project.name}
-                </h3>
-                {project.token_symbol && (
-                  <p className="text-sm text-gray-600 mb-2">
-                    토큰: {project.token_symbol}
-                  </p>
-                )}
-                {project.description && (
-                  <p className="text-gray-700 mb-4 line-clamp-3">
-                    {project.description}
-                  </p>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">
-                    {new Date(project.created_at).toLocaleDateString()}
-                  </span>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    project.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {project.status}
-                  </span>
+        {/* Google 스타일 중앙 정렬 검색 */}
+        <div className="flex-1 flex flex-col justify-center items-center px-4">
+          <ProjectSearch onSearch={handleSearch} isLoading={isLoading} />
+          
+          {/* 최근 프로젝트 표시 (검색어가 없을 때만) */}
+          {projects.length > 0 && (
+            <div className="mt-8 w-full max-w-4xl space-y-6">
+              {/* 검색 개선 제안 */}
+              <SearchImprovements projects={projects} />
+              
+              {/* 최근 프로젝트 */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">최근 프로젝트</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {projects.slice(0, 4).map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => setSelectedProject(project)}
+                      className="text-left p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200"
+                    >
+                      <div className="font-medium text-gray-900 text-sm">{project.name}</div>
+                      {project.token_symbol && (
+                        <div className="text-xs text-gray-500 mt-1">{project.token_symbol}</div>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-          {projects.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">저장된 프로젝트가 없습니다.</p>
             </div>
           )}
         </div>
 
-        {/* 프로젝트 상세 모달 */}
-        {selectedProject && (
-          <ProjectDetail
-            project={selectedProject}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onClose={() => setSelectedProject(null)}
-            isLoading={isLoading}
-          />
-        )}
+        {/* 하단 링크 */}
+        <div className="py-6 bg-gray-50 border-t">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Privacy</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Terms</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Settings</a>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* 프로젝트 상세 모달 */}
+      {selectedProject && (
+        <ProjectDetail
+          project={selectedProject}
+          onUpdate={handleUpdate}
+          onDelete={handleDelete}
+          onClose={() => setSelectedProject(null)}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   )
 }

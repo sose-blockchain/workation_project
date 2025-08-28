@@ -32,6 +32,3 @@ export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {
   id: string;
 }
 
-export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {
-  id: string;
-}
