@@ -22,6 +22,8 @@ export class TwitterService {
     }
 
     try {
+      console.log(`🔍 Supabase에서 Twitter 계정 조회: project_id=${projectId}`);
+      
       const { data, error } = await supabase
         .from('twitter_accounts')
         .select('*')
@@ -30,11 +32,19 @@ export class TwitterService {
 
       if (error) {
         if (error.code === 'PGRST116') { // No rows found
+          console.log(`❌ Twitter 계정을 찾을 수 없음: project_id=${projectId}`);
           return null;
         }
+        console.error(`❌ Supabase Twitter 조회 오류:`, {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
+      console.log(`✅ Twitter 계정 찾음: @${data.screen_name}`);
       return data as TwitterAccount;
     } catch (error) {
       console.error('트위터 계정 조회 오류:', error);
@@ -103,10 +113,13 @@ export class TwitterService {
    */
   async createOrUpdateTwitterAccount(request: CreateTwitterAccountRequest): Promise<TwitterSearchResult> {
     try {
-      // Twitter API에서 데이터 가져오기
+      // Twitter API에서 데이터 가져오기 (원본 케이스 유지)
+      const originalScreenName = request.screen_name;
+      console.log(`🔍 트위터 API 호출 시작: @${originalScreenName} (원본 케이스 유지)`);
+      
       const [userInfo, timeline] = await Promise.all([
-        twitterAPI.getUserInfo(request.screen_name),
-        request.fetch_timeline ? twitterAPI.getUserTimeline(request.screen_name, 20) : Promise.resolve([])
+        twitterAPI.getUserInfo(originalScreenName),
+        request.fetch_timeline ? twitterAPI.getUserTimeline(originalScreenName, 20) : Promise.resolve([])
       ]);
 
       if (!userInfo) {
@@ -386,7 +399,7 @@ export class TwitterService {
   }
 
   /**
-   * 트위터 URL에서 핸들 추출
+   * 트위터 URL에서 핸들 추출 (대소문자 보존)
    */
   static extractTwitterHandle(url: string): string | null {
     if (!url || typeof url !== 'string') {
@@ -407,9 +420,10 @@ export class TwitterService {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        const handle = match[1].toLowerCase().trim();
-        console.log(`✅ 추출된 핸들: ${handle}`);
-        return handle;
+        // 대소문자 보존 (API 호출용)
+        const originalHandle = match[1].trim();
+        console.log(`✅ 추출된 핸들: ${originalHandle} (대소문자 보존)`);
+        return originalHandle;
       }
     }
 

@@ -16,7 +16,14 @@ const createSupabaseClient = () => {
   }
   
   try {
-    return createClient(supabaseUrl, supabaseAnonKey)
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }
+    })
   } catch (error) {
     console.error('Failed to create Supabase client:', error)
     return null

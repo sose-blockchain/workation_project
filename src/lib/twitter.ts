@@ -64,7 +64,10 @@ class TwitterAPI {
    */
   async getUserInfo(screenname: string): Promise<TwitterUserInfo | null> {
     try {
-      // 문서에 따른 올바른 엔드포인트 사용
+      // 대소문자 구분 로그 추가
+      console.log(`🔍 Twitter API 호출: /screenname.php?screenname=${screenname} (케이스 유지)`);
+      
+      // 문서에 따른 올바른 엔드포인트 사용 (케이스 그대로 전달)
       const data = await this.makeRequest(`/screenname.php?screenname=${screenname}`);
       
       // 응답 데이터 디버깅
@@ -119,7 +122,10 @@ class TwitterAPI {
    */
   async getUserTimeline(screenname: string, count: number = 10): Promise<TwitterTimelineItem[]> {
     try {
-      // 문서에 따른 올바른 엔드포인트 사용
+      // 대소문자 구분 로그 추가
+      console.log(`🔍 Twitter Timeline API 호출: /timeline.php?screenname=${screenname} (케이스 유지)`);
+      
+      // 문서에 따른 올바른 엔드포인트 사용 (케이스 그대로 전달)
       const data = await this.makeRequest(`/timeline.php?screenname=${screenname}`);
       
       console.log('🔍 Twitter Timeline API 응답:', {
@@ -240,7 +246,7 @@ class TwitterAPI {
 // 싱글톤 인스턴스
 export const twitterAPI = new TwitterAPI();
 
-// 트위터 핸들 추출 함수
+// 트위터 핸들 추출 함수 (대소문자 보존)
 export function extractTwitterHandle(url: string): string | null {
   // 다양한 트위터 URL 패턴 매칭
   const patterns = [
@@ -253,7 +259,8 @@ export function extractTwitterHandle(url: string): string | null {
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
-      return TwitterAPI.normalizeTwitterHandle(match[1]);
+      // 대소문자 보존하여 반환 (API 호출 시 정확한 케이스 필요)
+      return match[1].trim();
     }
   }
 

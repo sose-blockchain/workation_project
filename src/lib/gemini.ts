@@ -31,7 +31,7 @@ export async function searchProjectInfo(projectName: string) {
     throw new Error('Gemini API is not initialized')
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const prompt = `
 다음 블록체인 프로젝트에 대한 정보를 정확한 JSON 형태로만 제공해주세요: ${projectName}

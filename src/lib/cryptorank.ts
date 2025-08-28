@@ -69,7 +69,7 @@ class CryptoRankAPI {
 
   // 프로젝트 검색
   async searchProjects(query: string): Promise<CryptoRankResponse<CryptoRankProject[]>> {
-    return this.request<CryptoRankProject[]>('/currencies', { query, limit: 10 });
+    return this.request<CryptoRankProject[]>('/currencies', { query, limit: 100 });
   }
 
   // 프로젝트 기본 정보 가져오기 (이름, 심볼만)
