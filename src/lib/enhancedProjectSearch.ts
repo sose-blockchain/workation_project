@@ -1,4 +1,5 @@
 import { searchProjectInfo } from './gemini';
+import { cryptoRankAPI } from './cryptorank';
 
 interface EnhancedProjectResult {
   project: any;
@@ -14,51 +15,43 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
   try {
     console.log(`Enhanced search started for: ${projectName}`);
 
-    // 1. Gemini AI로 기본 프로젝트 정보 수집 (투자 라운드 제외)
-    const aiResult = await searchProjectInfo(projectName);
-    console.log('Gemini AI result received');
-
-    // 2. CryptoRank API에서 투자 라운드 데이터 가져오기
-    let cryptoRankRounds: any[] = [];
-    let investmentDataSource = 'AI 분석';
-
+    // 1. CryptoRank API에서 기본 정보 (이름, 심볼) 가져오기
+    let cryptoRankProject = null;
     try {
-      console.log(`Fetching investment data from CryptoRank for: ${projectName}`);
-      
-      const response = await fetch(`/api/funding-rounds?project=${encodeURIComponent(projectName)}`);
-      
-      if (response.ok) {
-        const cryptoRankData = await response.json();
-        
-        if (cryptoRankData.fundingRounds && cryptoRankData.fundingRounds.length > 0) {
-          cryptoRankRounds = cryptoRankData.fundingRounds;
-          investmentDataSource = 'cryptorank.io';
-          console.log(`Found ${cryptoRankRounds.length} funding rounds from CryptoRank`);
-        } else {
-          console.log('No funding rounds found in CryptoRank');
-        }
-      } else {
-        console.warn('CryptoRank API response not ok:', response.status);
-      }
+      cryptoRankProject = await cryptoRankAPI.getProjectInfo(projectName);
     } catch (cryptoRankError) {
       console.warn('CryptoRank API 호출 실패:', cryptoRankError);
     }
 
-    // 3. 최종 결과 구성
-    const finalInvestmentRounds = cryptoRankRounds.length > 0 
-      ? cryptoRankRounds 
-      : aiResult.investment_rounds;
+    // 2. Gemini AI로 전체 프로젝트 정보 수집 (투자 라운드 포함)
+    const aiResult = await searchProjectInfo(projectName);
+    console.log('Gemini AI result received');
+
+    // 3. CryptoRank에서 가져온 정보로 AI 결과 보완
+    let finalProject = aiResult.project;
+    let basicInfoSource = 'Gemini AI';
+
+    if (cryptoRankProject) {
+      // CryptoRank에서 가져온 정확한 정보로 업데이트
+      finalProject = {
+        ...aiResult.project,
+        name: cryptoRankProject.name, // CryptoRank의 정확한 프로젝트명 사용
+        token_symbol: cryptoRankProject.symbol, // CryptoRank의 정확한 심볼 사용
+      };
+      basicInfoSource = 'CryptoRank API + Gemini AI';
+      console.log(`CryptoRank에서 정확한 프로젝트 정보 보완: ${cryptoRankProject.name} (${cryptoRankProject.symbol})`);
+    }
 
     const result: EnhancedProjectResult = {
-      project: aiResult.project,
-      investment_rounds: finalInvestmentRounds,
+      project: finalProject,
+      investment_rounds: aiResult.investment_rounds, // 투자 라운드는 항상 AI에서
       data_sources: {
-        basic_info: 'Gemini AI',
-        investment_data: cryptoRankRounds.length > 0 ? 'cryptorank.io' : 'AI 분석'
+        basic_info: basicInfoSource,
+        investment_data: 'AI 분석' // 투자 데이터는 항상 AI 분석
       }
     };
 
-    console.log(`Enhanced search completed. Investment data source: ${result.data_sources.investment_data}`);
+    console.log(`Enhanced search completed. Basic info: ${result.data_sources.basic_info}, Investment data: ${result.data_sources.investment_data}`);
     return result;
 
   } catch (error) {
@@ -71,7 +64,7 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       investment_rounds: aiResult.investment_rounds,
       data_sources: {
         basic_info: 'Gemini AI',
-        investment_data: 'AI 분석 (CryptoRank API 오류)'
+        investment_data: 'AI 분석'
       }
     };
   }

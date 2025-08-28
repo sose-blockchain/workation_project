@@ -86,8 +86,8 @@ export default function ResearchPage() {
         }
       }
 
-      const successMessage = enhancedResult.data_sources.investment_data === 'cryptorank.io' 
-        ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API에서 실시간 투자 데이터 수집)'
+      const successMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
+        ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API로 정확한 프로젝트명/심볼 확인)'
         : '프로젝트가 성공적으로 저장되었습니다!';
       
       setMessage(successMessage)
