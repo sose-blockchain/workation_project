@@ -134,5 +134,43 @@ git push origin main
 
 ---
 
-**현재 상태**: ✅ 배포 준비 완료
-**마지막 업데이트**: 2024년 12월
+## 🔄 최신 변경사항 (2025-01-28)
+
+### ✅ 완료된 작업
+- [x] **CryptoRank API 연동**: 프로젝트명/토큰 심볼 데이터 수집
+- [x] **투자 정보 프리미엄화**: AI 기반 투자 데이터를 프리미엄 서비스 안내로 교체
+- [x] **컴포넌트 구조 개선**: `PremiumInvestmentNotice.tsx` 신규 생성
+- [x] **캐시 무효화 시스템**: 동적 키를 통한 강제 렌더링 구현
+- [x] **로컬 개발 환경**: Rate Limit 우회를 위한 로컬 서버 설정
+
+### 🔧 환경 변수 업데이트
+```env
+# 기존 환경 변수
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+
+# 신규 추가 (2025-01-28)
+NEXT_PUBLIC_CRYPTORANK_API_KEY=your_cryptorank_api_key
+```
+
+### 📋 배포 후 확인사항 업데이트
+- [x] **투자 정보 섹션**: 프리미엄 안내 메시지 정상 표시
+- [x] **CryptoRank 연동**: 프로젝트 검색 시 정확한 이름/심볼 확인
+- [x] **캐시 무효화**: "Updated 2025.1.28 v2" 버전 태그 확인
+- [ ] **모바일 최적화**: 프리미엄 안내 UI 반응형 확인
+
+### ⚠️ 주의사항 추가
+1. **Vercel 무료 플랜 제한**: 시간당 배포 횟수 초과 시 47분 대기
+2. **CryptoRank API 제한**: 투자 라운드 데이터는 Pro 구독 필요 ($475/월)
+3. **로컬 개발 우선**: 배포 전 `http://localhost:3003`에서 사전 테스트
+
+### 🚀 배포 전략 개선
+1. **로컬 테스트** → **Git 푸시** → **자동 배포**
+2. 여러 변경사항을 묶어서 배치 배포
+3. Rate Limit 발생 시 로컬 개발 환경 활용
+
+---
+
+**현재 상태**: ✅ 배포 준비 완료 (프리미엄 서비스 안내 적용)
+**마지막 업데이트**: 2025-01-28

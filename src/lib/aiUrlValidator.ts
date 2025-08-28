@@ -26,27 +26,30 @@ export class AIUrlValidator {
   private genAI: GoogleGenerativeAI | null = null
 
   constructor() {
-    // 클라이언트 사이드에서만 초기화
-    if (typeof window !== 'undefined') {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      if (!apiKey) {
-        throw new Error('GEMINI_API_KEY is not set')
-      }
-      this.genAI = new GoogleGenerativeAI(apiKey)
-    }
+    // 생성자에서는 초기화하지 않음 (지연 초기화)
   }
 
   private ensureInitialized() {
     if (!this.genAI) {
       if (typeof window === 'undefined') {
-        throw new Error('AIUrlValidator can only be used on the client side')
+        console.warn('AIUrlValidator can only be used on the client side')
+        return false
       }
       const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
       if (!apiKey) {
-        throw new Error('GEMINI_API_KEY is not set')
+        console.error('NEXT_PUBLIC_GEMINI_API_KEY is not set in environment variables')
+        return false
       }
-      this.genAI = new GoogleGenerativeAI(apiKey)
+      try {
+        this.genAI = new GoogleGenerativeAI(apiKey)
+        console.log('✅ Gemini AI initialized successfully')
+        return true
+      } catch (error) {
+        console.error('Failed to initialize Gemini AI:', error)
+        return false
+      }
     }
+    return true
   }
 
   /**
@@ -76,7 +79,9 @@ export class AIUrlValidator {
    */
   async analyzeUrl(url: string, projectName: string, urlType: string): Promise<UrlAnalysisResult> {
     try {
-      this.ensureInitialized()
+      if (!this.ensureInitialized()) {
+        throw new Error('Gemini AI 초기화 실패')
+      }
       
       // URL 콘텐츠 가져오기
       const content = await this.fetchUrlContent(url)
@@ -211,7 +216,9 @@ URL 유형: ${urlType}
    */
   private async generateGeneralSuggestions(project: any, urlResults: UrlAnalysisResult[]): Promise<string[]> {
     try {
-      this.ensureInitialized()
+      if (!this.ensureInitialized()) {
+        return ['Gemini AI 초기화 실패로 분석할 수 없습니다']
+      }
       const model = this.genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
       const prompt = `
@@ -274,4 +281,15 @@ ${urlResults.map(r => `
   }
 }
 
-export const aiUrlValidator = new AIUrlValidator()
+// 지연 초기화로 변경 - 실제 사용할 때만 인스턴스 생성
+let aiUrlValidatorInstance: AIUrlValidator | null = null
+
+export const getAIUrlValidator = (): AIUrlValidator => {
+  if (!aiUrlValidatorInstance) {
+    aiUrlValidatorInstance = new AIUrlValidator()
+  }
+  return aiUrlValidatorInstance
+}
+
+// 하위 호환성을 위한 기본 export
+export const aiUrlValidator = getAIUrlValidator()
