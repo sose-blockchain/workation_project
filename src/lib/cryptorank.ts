@@ -22,6 +22,13 @@ class CryptoRankAPI {
   constructor() {
     this.apiKey = process.env.NEXT_PUBLIC_CRYPTORANK_API_KEY || '';
     this.baseUrl = 'https://api.cryptorank.io/v2';
+    
+    // API 키 검증
+    if (!this.apiKey) {
+      console.warn('⚠️ NEXT_PUBLIC_CRYPTORANK_API_KEY가 설정되지 않았습니다.');
+    } else {
+      console.log('✅ CryptoRank API 키가 설정되었습니다.');
+    }
   }
 
   private async request<T>(endpoint: string, params?: Record<string, any>): Promise<CryptoRankResponse<T>> {

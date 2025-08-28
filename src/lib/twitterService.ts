@@ -127,7 +127,7 @@ export class TwitterService {
       const accountData = {
         project_id: request.project_id,
         twitter_id: userInfo.id,
-        screen_name: userInfo.screen_name.toLowerCase(),
+        screen_name: (userInfo.screen_name || '').toLowerCase(),
         name: userInfo.name,
         description: userInfo.description || null,
         profile_image_url: userInfo.profile_image_url,

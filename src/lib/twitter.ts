@@ -63,6 +63,9 @@ class TwitterAPI {
     try {
       const data = await this.makeRequest(`/screenname.php?screenname=${screenname}`);
       
+      // 응답 데이터 디버깅
+      console.log('🔍 Twitter API 응답 데이터:', JSON.stringify(data, null, 2));
+      
       if (!data || data.error) {
         console.log(`Twitter: 사용자 '${screenname}'을 찾을 수 없습니다.`);
         return null;
