@@ -53,17 +53,51 @@ export default function ResearchPage() {
     
     try {
       // AI로 프로젝트 정보 검색
-      const projectInfo = await searchProjectInfo(projectName)
+      const aiResult = await searchProjectInfo(projectName)
       
-      // 데이터베이스에 저장
-      const { data: newProject, error } = await supabase
+      // 1. projects 테이블에 기본 정보 저장
+      const { data: newProject, error: projectError } = await supabase
         .from('projects')
-        .insert([projectInfo])
+        .insert([aiResult.project])
         .select()
         .single()
 
-      if (error) {
-        throw error
+      if (projectError) {
+        throw projectError
+      }
+
+      // 2. market_data 테이블에 마켓 데이터 저장 (있는 경우)
+      if (aiResult.market_data && newProject) {
+        const marketData = {
+          project_id: newProject.id,
+          ...aiResult.market_data,
+          data_source: aiResult.market_data.data_source || 'gemini_ai'
+        }
+        
+        const { error: marketError } = await supabase
+          .from('market_data')
+          .insert([marketData])
+
+        if (marketError) {
+          console.warn('마켓 데이터 저장 실패:', marketError)
+        }
+      }
+
+      // 3. investments 테이블에 투자 데이터 저장 (있는 경우)
+      if (aiResult.investment_rounds && Array.isArray(aiResult.investment_rounds) && newProject) {
+        const investmentData = aiResult.investment_rounds.map(round => ({
+          project_id: newProject.id,
+          ...round,
+          data_source: round.data_source || 'gemini_ai'
+        }))
+        
+        const { error: investmentError } = await supabase
+          .from('investments')
+          .insert(investmentData)
+
+        if (investmentError) {
+          console.warn('투자 데이터 저장 실패:', investmentError)
+        }
       }
 
       setMessage('프로젝트가 성공적으로 저장되었습니다!')

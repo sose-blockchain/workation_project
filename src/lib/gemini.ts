@@ -51,6 +51,29 @@ export async function searchProjectInfo(projectName: string) {
   "github_url": "GitHub 저장소 URL (공식 organization 또는 main repository)",
   "project_twitter_url": "프로젝트 공식 트위터 URL",
   "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (존재하지 않는 계정 제외)"],
+  "market_data": {
+    "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
+    "current_price_usd": "현재 가격 USD (숫자)",
+    "market_cap_usd": "시가총액 USD (숫자)",
+    "volume_24h_usd": "24시간 거래량 USD (숫자)",
+    "price_change_24h": "24시간 가격 변동률 % (숫자)",
+    "price_change_7d": "7일 가격 변동률 % (숫자)",
+    "price_change_30d": "30일 가격 변동률 % (숫자)",
+    "data_source": "데이터 소스 (coinmarketcap, coingecko, cryptorank 중 하나)"
+  },
+  "investment_rounds": [
+    {
+      "round_type": "투자 라운드 타입 (예: Seed, Series A, Private Sale, Strategic)",
+      "round_name": "라운드 이름 (예: Series A Round)",
+      "date": "투자 날짜 (YYYY-MM-DD 형식)",
+      "amount_usd": "투자 금액 USD (숫자)",
+      "valuation_pre_money_usd": "Pre-money 밸류에이션 USD (숫자)",
+      "valuation_post_money_usd": "Post-money 밸류에이션 USD (숫자)",
+      "lead_investor": "리드 투자자",
+      "investors": ["주요 투자자 리스트"],
+      "data_source": "데이터 소스 (cryptorank, crunchbase 중 하나)"
+    }
+  ],
   "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
   "current_price_usd": "현재 가격 USD (숫자)",
   "market_cap_usd": "시가총액 USD (숫자)",
@@ -69,14 +92,15 @@ export async function searchProjectInfo(projectName: string) {
 - keyword1은 반드시 Layer1, Layer2, DApp 중 하나로 분류
 - keyword2는 keyword1의 구체적인 세부 영역
 - keyword3는 해당 프로젝트만의 독특한 기술적 특징
-- investment_rounds는 Cryptorank, Crunchbase에서 확인된 투자 정보
+- market_data는 최신 가격/시장 정보 (coinmarketcap, coingecko, cryptorank)
+- investment_rounds는 Cryptorank, Crunchbase에서 확인된 모든 투자 라운드
 - 찾을 수 없는 정보는 null로 설정
 - 반드시 유효한 JSON 형태로만 응답
 `
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
+    const aiResponse = await model.generateContent(prompt)
+    const response = await aiResponse.response
     let text = response.text().trim()
     
     // JSON 블록에서 JSON만 추출
@@ -95,47 +119,52 @@ export async function searchProjectInfo(projectName: string) {
       ? projectInfo.name.toLowerCase().trim()
       : projectName.toLowerCase().trim()
     
-    // 기본값 설정
-    return {
-      name: normalizedName,
-      token_symbol: projectInfo.token_symbol || null,
-      description: projectInfo.description || null,
-      keyword1: projectInfo.keyword1 || null,
-      keyword2: projectInfo.keyword2 || null,
-      keyword3: projectInfo.keyword3 || null,
-      homepage_url: projectInfo.homepage_url || null,
-      whitepaper_url: projectInfo.whitepaper_url || null,
-      docs_url: projectInfo.docs_url || null,
-      blog_url: projectInfo.blog_url || null,
-      github_url: projectInfo.github_url || null,
-      project_twitter_url: projectInfo.project_twitter_url || null,
-      team_twitter_urls: projectInfo.team_twitter_urls || null,
-      market_cap_rank: projectInfo.market_cap_rank || null,
-      current_price_usd: projectInfo.current_price_usd || null,
-      market_cap_usd: projectInfo.market_cap_usd || null,
+    // AI 응답을 정규화된 스키마로 분리
+    const result = {
+      // projects 테이블용 기본 정보
+      project: {
+        name: normalizedName,
+        token_symbol: projectInfo.token_symbol || null,
+        description: projectInfo.description || null,
+        keyword1: projectInfo.keyword1 || null,
+        keyword2: projectInfo.keyword2 || null,
+        keyword3: projectInfo.keyword3 || null,
+        homepage_url: projectInfo.homepage_url || null,
+        whitepaper_url: projectInfo.whitepaper_url || null,
+        docs_url: projectInfo.docs_url || null,
+        blog_url: projectInfo.blog_url || null,
+        github_url: projectInfo.github_url || null,
+        project_twitter_url: projectInfo.project_twitter_url || null,
+        team_twitter_urls: projectInfo.team_twitter_urls || null
+      },
+      // market_data 테이블용 데이터
+      market_data: projectInfo.market_data || null,
+      // investments 테이블용 데이터
       investment_rounds: projectInfo.investment_rounds || null
     }
+    
+    return result
   } catch (error) {
     console.error('Error searching project info:', error)
     
     // 기본 프로젝트 정보 반환 (AI 실패 시)
     return {
-      name: projectName.toLowerCase().trim(),
-      token_symbol: null,
-      description: `${projectName} 프로젝트에 대한 정보를 자동으로 수집할 수 없었습니다. 수동으로 정보를 입력해주세요.`,
-      keyword1: null,
-      keyword2: null,
-      keyword3: null,
-      homepage_url: null,
-      whitepaper_url: null,
-      docs_url: null,
-      blog_url: null,
-      github_url: null,
-      project_twitter_url: null,
-      team_twitter_urls: null,
-      market_cap_rank: null,
-      current_price_usd: null,
-      market_cap_usd: null,
+      project: {
+        name: projectName.toLowerCase().trim(),
+        token_symbol: null,
+        description: `${projectName} 프로젝트에 대한 정보를 자동으로 수집할 수 없었습니다. 수동으로 정보를 입력해주세요.`,
+        keyword1: null,
+        keyword2: null,
+        keyword3: null,
+        homepage_url: null,
+        whitepaper_url: null,
+        docs_url: null,
+        blog_url: null,
+        github_url: null,
+        project_twitter_url: null,
+        team_twitter_urls: null
+      },
+      market_data: null,
       investment_rounds: null
     }
   }
