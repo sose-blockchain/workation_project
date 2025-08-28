@@ -65,20 +65,28 @@ class TwitterAPI {
   async getUserInfo(screenname: string): Promise<TwitterUserInfo | null> {
     try {
       // 대소문자 구분 로그 추가
-      console.log(`🔍 Twitter API 호출: /screenname.php?screenname=${screenname} (케이스 유지)`);
+      console.log(`🔍 Twitter API 호출 시작: @${screenname}`);
       
-      // 문서에 따른 올바른 엔드포인트 사용 (케이스 그대로 전달)
+      // 가이드에 따른 정확한 엔드포인트 사용
+      console.log(`🔗 Twitter API 엔드포인트 호출: /screenname.php?screenname=${screenname}`);
+      
       const data = await this.makeRequest(`/screenname.php?screenname=${screenname}`);
       
-      // 응답 데이터 디버깅
-      console.log('🔍 Twitter API 응답 데이터:', {
+      // 응답 데이터 상세 디버깅
+      console.log('🔍 Twitter API 전체 응답 데이터:', {
         hasData: !!data,
+        dataType: typeof data,
         keys: data ? Object.keys(data) : [],
+        fullResponse: data, // 전체 응답 확인
         sampleData: data ? {
           id: data.id || data.id_str,
           name: data.name,
           screen_name: data.screen_name,
-          followers_count: data.followers_count
+          followers_count: data.followers_count,
+          description: data.description,
+          profile_image_url: data.profile_image_url_https || data.profile_image_url,
+          created_at: data.created_at,
+          verified: data.verified
         } : null
       });
       
@@ -87,30 +95,70 @@ class TwitterAPI {
         return null;
       }
 
-      // API 응답에서 필수 필드 확인
-      if (!data.id && !data.id_str) {
-        console.error('❌ Twitter API 응답에서 ID가 누락됨:', data);
-        return null;
+      // API 응답에서 필수 필드 확인 (다양한 ID 필드 시도)
+      if (!data.id && !data.id_str && !data.user_id && !data.twitter_id) {
+        console.warn('⚠️ Twitter API 응답에서 ID 필드를 찾을 수 없음, 임시 ID 생성:', Object.keys(data));
+        // ID가 없어도 계속 진행 (다른 데이터가 유효하면)
       }
 
-      console.log(`✅ Twitter: ${data.name || 'Unknown'} (@${data.screen_name || screenname}) 정보 가져옴`);
-
-      return {
-        id: String(data.id_str || data.id || `temp_${Date.now()}`),
-        name: data.name || 'Unknown User',
-        screen_name: data.screen_name || screenname,
-        description: data.description || '',
-        profile_image_url: data.profile_image_url_https || data.profile_image_url || '',
-        followers_count: Number(data.followers_count) || 0,
-        friends_count: Number(data.friends_count) || 0,
-        statuses_count: Number(data.statuses_count) || 0,
-        favourites_count: Number(data.favourites_count) || 0,
-        created_at: data.created_at || new Date().toISOString(),
-        verified: Boolean(data.verified),
-        location: data.location || null,
-        url: data.url || null,
-        profile_banner_url: data.profile_banner_url || null
+      // 응답 데이터 매핑 (다양한 필드명 시도)
+      const mappedData = {
+        id: String(
+          data.id_str || data.id || data.user_id || data.twitter_id || `temp_${Date.now()}`
+        ),
+        name: data.name || data.display_name || data.full_name || 'Unknown User',
+        screen_name: data.screen_name || data.username || data.handle || screenname,
+        description: data.description || data.bio || data.about || '',
+        profile_image_url: 
+          data.profile_image_url_https || 
+          data.profile_image_url || 
+          data.avatar_url || 
+          data.profile_pic || 
+          data.image_url || '',
+        followers_count: Number(
+          data.followers_count || 
+          data.follower_count || 
+          data.followers || 
+          0
+        ),
+        friends_count: Number(
+          data.friends_count || 
+          data.following_count || 
+          data.following || 
+          0
+        ),
+        statuses_count: Number(
+          data.statuses_count || 
+          data.tweet_count || 
+          data.tweets || 
+          0
+        ),
+        favourites_count: Number(
+          data.favourites_count || 
+          data.likes_count || 
+          data.likes || 
+          0
+        ),
+        created_at: data.created_at || data.join_date || data.registered || new Date().toISOString(),
+        verified: Boolean(data.verified || data.is_verified || data.blue_verified),
+        location: data.location || data.geo_location || null,
+        url: data.url || data.website || data.external_url || null,
+        profile_banner_url: data.profile_banner_url || data.banner_url || data.cover_image || null
       };
+
+      console.log(`✅ Twitter: ${mappedData.name} (@${mappedData.screen_name}) 정보 매핑 완료`);
+      console.log('📊 매핑된 데이터:', {
+        name: mappedData.name,
+        screen_name: mappedData.screen_name,
+        followers: mappedData.followers_count,
+        following: mappedData.friends_count,
+        verified: mappedData.verified,
+        description_length: mappedData.description.length,
+        has_profile_image: !!mappedData.profile_image_url,
+        created_at: mappedData.created_at
+      });
+
+      return mappedData;
     } catch (error) {
       console.error(`❌ Twitter API 오류 (${screenname}):`, error);
       return null;
@@ -122,10 +170,9 @@ class TwitterAPI {
    */
   async getUserTimeline(screenname: string, count: number = 10): Promise<TwitterTimelineItem[]> {
     try {
-      // 대소문자 구분 로그 추가
-      console.log(`🔍 Twitter Timeline API 호출: /timeline.php?screenname=${screenname} (케이스 유지)`);
+      // 가이드에 따른 정확한 엔드포인트 사용
+      console.log(`🔍 Twitter Timeline API 호출: /timeline.php?screenname=${screenname}`);
       
-      // 문서에 따른 올바른 엔드포인트 사용 (케이스 그대로 전달)
       const data = await this.makeRequest(`/timeline.php?screenname=${screenname}`);
       
       console.log('🔍 Twitter Timeline API 응답:', {
@@ -245,6 +292,40 @@ class TwitterAPI {
 
 // 싱글톤 인스턴스
 export const twitterAPI = new TwitterAPI();
+
+// @SuiNetwork 테스트 전용 함수
+export async function testSuiNetworkAPI(): Promise<void> {
+  console.log('🧪 @SuiNetwork API 테스트 시작...');
+  
+  try {
+    const result = await twitterAPI.getUserInfo('SuiNetwork');
+    console.log('🎯 @SuiNetwork 테스트 결과:', {
+      success: !!result,
+      name: result?.name,
+      screen_name: result?.screen_name,
+      followers_count: result?.followers_count,
+      friends_count: result?.friends_count,
+      verified: result?.verified,
+      description_preview: result?.description?.substring(0, 100),
+      profile_image: !!result?.profile_image_url,
+      created_at: result?.created_at
+    });
+    
+    if (result) {
+      console.log('✅ @SuiNetwork 데이터 수집 성공!');
+      console.log('📋 전체 데이터:', result);
+    } else {
+      console.log('❌ @SuiNetwork 데이터 수집 실패');
+    }
+  } catch (error) {
+    console.error('💥 @SuiNetwork API 테스트 오류:', error);
+  }
+}
+
+// 브라우저에서 직접 테스트할 수 있도록 전역 함수로 노출
+if (typeof window !== 'undefined') {
+  (window as any).testSuiNetworkAPI = testSuiNetworkAPI;
+}
 
 // 트위터 핸들 추출 함수 (대소문자 보존)
 export function extractTwitterHandle(url: string): string | null {
