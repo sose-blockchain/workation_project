@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Project, UpdateProjectRequest } from '@/types/project'
 import { validateProjectUrls, isDeprecatedUrl } from '@/lib/urlValidator'
+import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
 
 interface ProjectDetailProps {
   project: Project
@@ -38,6 +39,9 @@ export default function ProjectDetail({
   })
   const [urlValidation, setUrlValidation] = useState<any>(null)
   const [showValidation, setShowValidation] = useState(false)
+  const [aiAnalysis, setAiAnalysis] = useState<ProjectUrlAnalysis | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showAiAnalysis, setShowAiAnalysis] = useState(false)
 
   // URL 검증 실행
   useEffect(() => {
@@ -56,6 +60,21 @@ export default function ProjectDetail({
     
     validateUrls()
   }, [project])
+
+  // AI URL 분석 실행
+  const handleAiAnalysis = async () => {
+    setIsAnalyzing(true)
+    try {
+      const analysis = await aiUrlValidator.analyzeProjectUrls(project)
+      setAiAnalysis(analysis)
+      setShowAiAnalysis(true)
+    } catch (error) {
+      console.error('AI 분석 중 오류:', error)
+      alert('AI 분석 중 오류가 발생했습니다.')
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -126,6 +145,13 @@ export default function ProjectDetail({
                     className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                   >
                     URL 검증
+                  </button>
+                  <button
+                    onClick={handleAiAnalysis}
+                    disabled={isAnalyzing}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {isAnalyzing ? '🤖 AI 분석 중...' : '🤖 AI URL 분석'}
                   </button>
                   <button
                     onClick={handleDelete}
@@ -206,6 +232,114 @@ export default function ProjectDetail({
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* AI URL 분석 결과 표시 */}
+          {showAiAnalysis && aiAnalysis && (
+            <div className="mb-6 p-4 bg-purple-50 rounded-lg">
+              <h3 className="text-lg font-medium text-purple-900 mb-3">🤖 AI URL 연관성 분석 결과</h3>
+              
+              {/* 전체 요약 */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">{aiAnalysis.overallScore}%</div>
+                  <div className="text-sm text-gray-600">전체 품질 점수</div>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{aiAnalysis.validUrls}</div>
+                  <div className="text-sm text-gray-600">관련성 높음</div>
+                </div>
+                <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600">{aiAnalysis.outdatedUrls}</div>
+                  <div className="text-sm text-gray-600">업데이트 필요</div>
+                </div>
+                <div className="text-center p-3 bg-red-50 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">{aiAnalysis.irrelevantUrls}</div>
+                  <div className="text-sm text-gray-600">부적절한 URL</div>
+                </div>
+              </div>
+
+              {/* 우선순위 액션 */}
+              {aiAnalysis.priorityActions.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-medium text-purple-900 mb-2">🚨 우선순위 액션</h4>
+                  <ul className="space-y-1">
+                    {aiAnalysis.priorityActions.map((action, index) => (
+                      <li key={index} className="flex items-center space-x-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        <span className="text-sm text-gray-700">{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 전체 개선 제안 */}
+              {aiAnalysis.generalSuggestions.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-medium text-purple-900 mb-2">💡 개선 제안</h4>
+                  <ul className="space-y-1">
+                    {aiAnalysis.generalSuggestions.map((suggestion, index) => (
+                      <li key={index} className="flex items-center space-x-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span className="text-sm text-gray-700">{suggestion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 개별 URL 분석 결과 */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-purple-900">📋 개별 URL 분석</h4>
+                {aiAnalysis.urlResults.map((result, index) => (
+                  <div key={index} className={`p-3 rounded-lg border ${
+                    result.relevanceScore >= 70 ? 'bg-green-50 border-green-200' :
+                    result.relevanceScore >= 40 ? 'bg-yellow-50 border-yellow-200' :
+                    'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="break-all text-sm font-medium text-gray-900">
+                        {result.url}
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${
+                        result.relevanceScore >= 70 ? 'bg-green-100 text-green-800' :
+                        result.relevanceScore >= 40 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {result.relevanceScore}%
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 mb-2">
+                      {result.contentSummary}
+                    </div>
+
+                    {result.issues.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-xs font-medium text-red-700 mb-1">문제점:</div>
+                        <ul className="text-xs text-red-600 space-y-1">
+                          {result.issues.map((issue, issueIndex) => (
+                            <li key={issueIndex}>• {issue}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {result.suggestions.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-blue-700 mb-1">개선 제안:</div>
+                        <ul className="text-xs text-blue-600 space-y-1">
+                          {result.suggestions.map((suggestion, suggestionIndex) => (
+                            <li key={suggestionIndex}>• {suggestion}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
