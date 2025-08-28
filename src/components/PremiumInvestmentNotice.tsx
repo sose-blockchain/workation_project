@@ -17,7 +17,7 @@ export default function PremiumInvestmentNotice({ projectId }: PremiumInvestment
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">투자 정보</h3>
         <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-          Updated 2025.1.28
+          Updated 2025.1.28 v2
         </div>
       </div>
 
