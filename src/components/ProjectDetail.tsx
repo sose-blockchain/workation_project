@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Project, UpdateProjectRequest } from '@/types/project'
-import { validateProjectUrls, isDeprecatedUrl } from '@/lib/urlValidator'
 import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
 
 interface ProjectDetailProps {
@@ -37,29 +36,12 @@ export default function ProjectDetail({
     project_twitter_url: project.project_twitter_url || '',
     team_twitter_urls: project.team_twitter_urls || []
   })
-  const [urlValidation, setUrlValidation] = useState<any>(null)
-  const [showValidation, setShowValidation] = useState(false)
+
   const [aiAnalysis, setAiAnalysis] = useState<ProjectUrlAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [showAiAnalysis, setShowAiAnalysis] = useState(false)
 
-  // URL 검증 실행
-  useEffect(() => {
-    const validateUrls = async () => {
-      const validation = await validateProjectUrls({
-        homepage_url: project.homepage_url || undefined,
-        whitepaper_url: project.whitepaper_url || undefined,
-        docs_url: project.docs_url || undefined,
-        blog_url: project.blog_url || undefined,
-        github_url: project.github_url || undefined,
-        project_twitter_url: project.project_twitter_url || undefined,
-        team_twitter_urls: project.team_twitter_urls || undefined
-      })
-      setUrlValidation(validation)
-    }
-    
-    validateUrls()
-  }, [project])
+
 
   // AI URL 분석 실행
   const handleAiAnalysis = async () => {
@@ -140,12 +122,7 @@ export default function ProjectDetail({
                   >
                     수정
                   </button>
-                  <button
-                    onClick={() => setShowValidation(!showValidation)}
-                    className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    URL 검증
-                  </button>
+
                   <button
                     onClick={handleAiAnalysis}
                     disabled={isAnalyzing}
@@ -171,69 +148,7 @@ export default function ProjectDetail({
             </div>
           </div>
 
-          {/* URL 검증 결과 표시 */}
-          {showValidation && urlValidation && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">URL 검증 결과</h3>
-              
-              {/* 전체 요약 */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="text-center p-3 bg-white rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">{urlValidation.report.totalUrls}</div>
-                  <div className="text-sm text-gray-600">전체 URL</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{urlValidation.report.validUrls}</div>
-                  <div className="text-sm text-gray-600">유효한 URL</div>
-                </div>
-                <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{urlValidation.report.deprecatedUrls}</div>
-                  <div className="text-sm text-gray-600">오래된 URL</div>
-                </div>
-                <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{urlValidation.report.inaccessibleUrls}</div>
-                  <div className="text-sm text-gray-600">접근 불가</div>
-                </div>
-              </div>
 
-              {/* 개선 제안 */}
-              {urlValidation.report.suggestions.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-2">개선 제안</h4>
-                  <ul className="space-y-1">
-                    {urlValidation.report.suggestions.map((suggestion: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 flex items-start">
-                        <span className="text-yellow-500 mr-2">⚠️</span>
-                        {suggestion}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* 오래된 URL 목록 */}
-              {urlValidation.report.deprecatedUrls > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-2">오래된 URL</h4>
-                  <div className="space-y-2">
-                    {Object.entries(urlValidation.deprecated).map(([key, url]) => {
-                      if (!url) return null
-                      const deprecationInfo = typeof url === 'string' ? isDeprecatedUrl(url) : null
-                      return (
-                        <div key={key} className="p-2 bg-yellow-50 rounded text-sm">
-                          <div className="font-medium text-yellow-800">{key.replace('_', ' ').toUpperCase()}</div>
-                          <div className="text-yellow-700 break-all">{Array.isArray(url) ? url.join(', ') : String(url)}</div>
-                          {deprecationInfo && (
-                            <div className="text-yellow-600 text-xs mt-1">{deprecationInfo.reason}</div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* AI URL 분석 결과 표시 */}
           {showAiAnalysis && aiAnalysis && (

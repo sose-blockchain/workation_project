@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Project } from '@/types/project'
-import SearchImprovements from './SearchImprovements'
+
 
 interface ProjectSidebarProps {
   projects: Project[]
@@ -28,16 +28,7 @@ export default function ProjectSidebar({
     (project.keyword3 && project.keyword3.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  // 개선 필요한 프로젝트 계산
-  const projectsNeedingImprovement = projects.filter(project => {
-    const urlCount = [
-      project.homepage_url,
-      project.github_url,
-      project.docs_url,
-      project.project_twitter_url
-    ].filter(Boolean).length
-    return urlCount < 2 // URL이 2개 미만인 프로젝트
-  })
+
 
   return (
     <>
@@ -105,41 +96,9 @@ export default function ProjectSidebar({
 
           {/* 콘텐츠 */}
           <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-            {/* 검색 품질 분석 */}
-            {projects.length > 0 && (
-              <div>
-                <SearchImprovements projects={projects} />
-              </div>
-            )}
 
-            {/* 개선 필요 프로젝트 */}
-            {projectsNeedingImprovement.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-orange-600 mb-3 flex items-center">
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                  개선 필요 프로젝트 ({projectsNeedingImprovement.length})
-                </h3>
-                <div className="space-y-1">
-                  {projectsNeedingImprovement.map((project) => (
-                    <button
-                      key={project.id}
-                      onClick={() => {
-                        onProjectSelect(project)
-                        setIsOpen(false)
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded border-l-4 border-orange-400 bg-orange-50 hover:bg-orange-100 ${
-                        selectedProject?.id === project.id ? 'bg-orange-100 text-orange-800' : 'text-orange-700'
-                      }`}
-                    >
-                      <div className="font-medium">{project.name}</div>
-                      <div className="text-xs text-orange-600">URL 정보 부족</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+
+
 
             {/* 모든 프로젝트 목록 */}
             <div>

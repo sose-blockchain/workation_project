@@ -46,6 +46,10 @@ export type Database = {
           github_url: string | null
           project_twitter_url: string | null
           team_twitter_urls: string[] | null
+          market_cap_rank: number | null
+          current_price_usd: number | null
+          market_cap_usd: number | null
+          investment_rounds: any[] | null
           ai_summary: string | null
           ai_keywords: string[] | null
           status: string
@@ -67,6 +71,10 @@ export type Database = {
           github_url?: string | null
           project_twitter_url?: string | null
           team_twitter_urls?: string[] | null
+          market_cap_rank?: number | null
+          current_price_usd?: number | null
+          market_cap_usd?: number | null
+          investment_rounds?: any[] | null
           ai_summary?: string | null
           ai_keywords?: string[] | null
           status?: string
@@ -88,6 +96,10 @@ export type Database = {
           github_url?: string | null
           project_twitter_url?: string | null
           team_twitter_urls?: string[] | null
+          market_cap_rank?: number | null
+          current_price_usd?: number | null
+          market_cap_usd?: number | null
+          investment_rounds?: any[] | null
           ai_summary?: string | null
           ai_keywords?: string[] | null
           status?: string

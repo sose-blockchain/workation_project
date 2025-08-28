@@ -38,26 +38,38 @@ export async function searchProjectInfo(projectName: string) {
 
 다음 형식으로 응답해주세요 (다른 텍스트 없이 JSON만):
 {
-  "name": "프로젝트명을 영문 소문자로 (예: ethereum, bitcoin, solana)",
-  "token_symbol": "토큰 심볼 (예: ETH, BTC)",
+  "name": "프로젝트명을 영문 소문자로 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 이름)",
+  "token_symbol": "토큰 심볼 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 심볼)",
   "description": "프로젝트에 대한 한글 설명 (2-3문장으로 자세히)",
-  "keyword1": "주요 키워드 1 (예: Layer1)",
-  "keyword2": "주요 키워드 2 (예: Smart Contract)",
-  "keyword3": "주요 키워드 3 (예: DeFi)",
+  "keyword1": "Layer1, Layer2, DApp 중 하나 (프로젝트 분류)",
+  "keyword2": "keyword1의 세부 디테일 (예: Smart Contract, DeFi, GameFi, Infrastructure)",
+  "keyword3": "특별한 기술이나 차별점 (예: Zero-Knowledge, Interoperability, AI-Powered)",
   "homepage_url": "공식 홈페이지 URL",
   "whitepaper_url": "백서 URL",
   "docs_url": "문서 URL", 
   "blog_url": "블로그 URL",
   "github_url": "GitHub 저장소 URL (공식 organization 또는 main repository)",
   "project_twitter_url": "프로젝트 공식 트위터 URL",
-  "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (존재하지 않는 계정 제외)"]
+  "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (존재하지 않는 계정 제외)"],
+  "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
+  "current_price_usd": "현재 가격 USD (숫자)",
+  "market_cap_usd": "시가총액 USD (숫자)",
+  "investment_rounds": [
+    {
+      "round_type": "투자 라운드 타입 (예: Seed, Series A, Private Sale)",
+      "date": "투자 날짜 (YYYY-MM-DD 형식)",
+      "amount_usd": "투자 금액 USD (숫자)",
+      "investors": ["주요 투자자 리스트"]
+    }
+  ]
 }
 
 주의사항:
-- name은 반드시 영문 소문자로 작성
-- description은 한글로 자세하게 작성  
-- keyword1, keyword2, keyword3는 영문으로 작성 (예: Layer1, DeFi, NFT)
-- team_twitter_urls는 실제 존재하고 활동 중인 계정만 포함
+- name과 token_symbol은 반드시 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
+- keyword1은 반드시 Layer1, Layer2, DApp 중 하나로 분류
+- keyword2는 keyword1의 구체적인 세부 영역
+- keyword3는 해당 프로젝트만의 독특한 기술적 특징
+- investment_rounds는 Cryptorank, Crunchbase에서 확인된 투자 정보
 - 찾을 수 없는 정보는 null로 설정
 - 반드시 유효한 JSON 형태로만 응답
 `
@@ -97,7 +109,11 @@ export async function searchProjectInfo(projectName: string) {
       blog_url: projectInfo.blog_url || null,
       github_url: projectInfo.github_url || null,
       project_twitter_url: projectInfo.project_twitter_url || null,
-      team_twitter_urls: projectInfo.team_twitter_urls || null
+      team_twitter_urls: projectInfo.team_twitter_urls || null,
+      market_cap_rank: projectInfo.market_cap_rank || null,
+      current_price_usd: projectInfo.current_price_usd || null,
+      market_cap_usd: projectInfo.market_cap_usd || null,
+      investment_rounds: projectInfo.investment_rounds || null
     }
   } catch (error) {
     console.error('Error searching project info:', error)
@@ -116,7 +132,11 @@ export async function searchProjectInfo(projectName: string) {
       blog_url: null,
       github_url: null,
       project_twitter_url: null,
-      team_twitter_urls: null
+      team_twitter_urls: null,
+      market_cap_rank: null,
+      current_price_usd: null,
+      market_cap_usd: null,
+      investment_rounds: null
     }
   }
 }

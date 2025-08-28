@@ -15,6 +15,12 @@ export interface Project {
   team_twitter_urls?: string[];
   ai_summary?: string;
   ai_keywords?: string[];
+  // 마켓 데이터
+  market_cap_rank?: number;
+  current_price_usd?: number;
+  market_cap_usd?: number;
+  // 투자 데이터 (JSON 형태로 저장)
+  investment_rounds?: any[];
   status: 'active' | 'inactive' | 'archived';
   created_at: string;
   updated_at: string;
@@ -34,6 +40,12 @@ export interface CreateProjectRequest {
   github_url?: string;
   project_twitter_url?: string;
   team_twitter_urls?: string[];
+  // 마켓 데이터
+  market_cap_rank?: number;
+  current_price_usd?: number;
+  market_cap_usd?: number;
+  // 투자 데이터
+  investment_rounds?: any[];
 }
 
 export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {
