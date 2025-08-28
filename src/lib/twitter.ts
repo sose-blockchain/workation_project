@@ -64,36 +64,52 @@ class TwitterAPI {
    */
   async getUserInfo(screenname: string): Promise<TwitterUserInfo | null> {
     try {
+      // 문서에 따른 올바른 엔드포인트 사용
       const data = await this.makeRequest(`/screenname.php?screenname=${screenname}`);
       
       // 응답 데이터 디버깅
-      console.log('🔍 Twitter API 응답 데이터:', JSON.stringify(data, null, 2));
+      console.log('🔍 Twitter API 응답 데이터:', {
+        hasData: !!data,
+        keys: data ? Object.keys(data) : [],
+        sampleData: data ? {
+          id: data.id || data.id_str,
+          name: data.name,
+          screen_name: data.screen_name,
+          followers_count: data.followers_count
+        } : null
+      });
       
-      if (!data || data.error) {
-        console.log(`Twitter: 사용자 '${screenname}'을 찾을 수 없습니다.`);
+      if (!data || data.error || data.errors) {
+        console.log(`❌ Twitter: 사용자 '${screenname}'을 찾을 수 없습니다.`, data?.error || data?.errors);
         return null;
       }
 
-      console.log(`Twitter: ${data.name} (@${data.screen_name}) 정보 가져옴`);
+      // API 응답에서 필수 필드 확인
+      if (!data.id && !data.id_str) {
+        console.error('❌ Twitter API 응답에서 ID가 누락됨:', data);
+        return null;
+      }
+
+      console.log(`✅ Twitter: ${data.name || 'Unknown'} (@${data.screen_name || screenname}) 정보 가져옴`);
 
       return {
-        id: data.id_str || data.id,
-        name: data.name,
-        screen_name: data.screen_name,
+        id: String(data.id_str || data.id || `temp_${Date.now()}`),
+        name: data.name || 'Unknown User',
+        screen_name: data.screen_name || screenname,
         description: data.description || '',
-        profile_image_url: data.profile_image_url_https || data.profile_image_url,
-        followers_count: data.followers_count || 0,
-        friends_count: data.friends_count || 0,
-        statuses_count: data.statuses_count || 0,
-        favourites_count: data.favourites_count || 0,
-        created_at: data.created_at,
-        verified: data.verified || false,
-        location: data.location,
-        url: data.url,
-        profile_banner_url: data.profile_banner_url
+        profile_image_url: data.profile_image_url_https || data.profile_image_url || '',
+        followers_count: Number(data.followers_count) || 0,
+        friends_count: Number(data.friends_count) || 0,
+        statuses_count: Number(data.statuses_count) || 0,
+        favourites_count: Number(data.favourites_count) || 0,
+        created_at: data.created_at || new Date().toISOString(),
+        verified: Boolean(data.verified),
+        location: data.location || null,
+        url: data.url || null,
+        profile_banner_url: data.profile_banner_url || null
       };
     } catch (error) {
-      console.error(`Twitter API 오류 (${screenname}):`, error);
+      console.error(`❌ Twitter API 오류 (${screenname}):`, error);
       return null;
     }
   }
@@ -101,37 +117,55 @@ class TwitterAPI {
   /**
    * 사용자 타임라인 조회
    */
-  async getUserTimeline(screenname: string, count: number = 20): Promise<TwitterTimelineItem[]> {
+  async getUserTimeline(screenname: string, count: number = 10): Promise<TwitterTimelineItem[]> {
     try {
+      // 문서에 따른 올바른 엔드포인트 사용
       const data = await this.makeRequest(`/timeline.php?screenname=${screenname}`);
       
-      if (!data || !Array.isArray(data)) {
-        console.log(`Twitter: '${screenname}'의 타임라인을 가져올 수 없습니다.`);
+      console.log('🔍 Twitter Timeline API 응답:', {
+        hasData: !!data,
+        isArray: Array.isArray(data),
+        length: Array.isArray(data) ? data.length : 0,
+        firstItem: Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : null
+      });
+      
+      if (!data) {
+        console.log(`❌ Twitter: '${screenname}'의 타임라인을 가져올 수 없습니다.`);
         return [];
       }
 
-      return data.slice(0, count).map((tweet: any) => ({
-        id: tweet.id_str || tweet.id,
-        text: tweet.full_text || tweet.text,
-        created_at: tweet.created_at,
-        retweet_count: tweet.retweet_count || 0,
-        favorite_count: tweet.favorite_count || 0,
+      // 응답이 배열이 아닌 경우 처리
+      let tweets = Array.isArray(data) ? data : (data.data || []);
+      
+      if (!Array.isArray(tweets)) {
+        console.log(`⚠️ Twitter: 타임라인 응답이 예상된 형식이 아닙니다.`, typeof tweets);
+        return [];
+      }
+
+      console.log(`✅ Twitter: ${screenname}의 타임라인 ${tweets.length}개 트윗 가져옴`);
+
+      return tweets.slice(0, count).map((tweet: any) => ({
+        id: String(tweet.id_str || tweet.id || `tweet_${Date.now()}_${Math.random()}`),
+        text: tweet.full_text || tweet.text || '',
+        created_at: tweet.created_at || new Date().toISOString(),
+        retweet_count: Number(tweet.retweet_count) || 0,
+        favorite_count: Number(tweet.favorite_count) || 0,
         user: {
-          id: tweet.user.id_str || tweet.user.id,
-          name: tweet.user.name,
-          screen_name: tweet.user.screen_name,
-          description: tweet.user.description,
-          profile_image_url: tweet.user.profile_image_url_https || tweet.user.profile_image_url,
-          followers_count: tweet.user.followers_count,
-          friends_count: tweet.user.friends_count,
-          statuses_count: tweet.user.statuses_count,
-          favourites_count: tweet.user.favourites_count,
-          created_at: tweet.user.created_at,
-          verified: tweet.user.verified
+          id: String(tweet.user?.id_str || tweet.user?.id || ''),
+          name: tweet.user?.name || 'Unknown',
+          screen_name: tweet.user?.screen_name || screenname,
+          description: tweet.user?.description || '',
+          profile_image_url: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || '',
+          followers_count: Number(tweet.user?.followers_count) || 0,
+          friends_count: Number(tweet.user?.friends_count) || 0,
+          statuses_count: Number(tweet.user?.statuses_count) || 0,
+          favourites_count: Number(tweet.user?.favourites_count) || 0,
+          created_at: tweet.user?.created_at || new Date().toISOString(),
+          verified: Boolean(tweet.user?.verified)
         }
-      }));
+      })).filter(tweet => tweet.id && tweet.text); // 유효한 트윗만 필터링
     } catch (error) {
-      console.error(`Twitter Timeline API 오류 (${screenname}):`, error);
+      console.error(`❌ Twitter Timeline API 오류 (${screenname}):`, error);
       return [];
     }
   }

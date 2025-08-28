@@ -90,11 +90,12 @@ export default function HomePage() {
               twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
               console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
             } else {
-              console.warn(`⚠️ 트위터 계정 수집 실패: @${handle}`);
+              console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
             }
           }
         } catch (twitterError) {
-          console.error('트위터 정보 자동 수집 중 오류:', twitterError);
+          console.error('❌ 트위터 정보 자동 수집 중 오류:', twitterError);
+          // 트위터 오류는 사용자에게 표시하지 않음 (선택적 기능)
         }
       }
 

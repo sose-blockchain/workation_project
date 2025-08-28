@@ -53,16 +53,27 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
     
     try {
       // AI 검색 결과에서 트위터 URL 찾기
-      const twitterUrls = [
+      const potentialTwitterUrls = [
         aiResult.project.project_twitter_url,
-        ...(aiResult.project.team_twitter_urls || []),
-        // 추가 필드에서 트위터 URL 찾기
-        ...[
-          aiResult.project.homepage_url,
-          aiResult.project.blog_url,
-          aiResult.project.github_url
-        ].filter((url: string) => url && (url.includes('twitter.com') || url.includes('x.com')))
+        ...(aiResult.project.team_twitter_urls || [])
       ].filter(Boolean);
+
+      console.log('🔍 AI에서 발견된 잠재적 트위터 URL들:', potentialTwitterUrls);
+
+      // 첫 번째로 유효한 트위터 URL 찾기
+      const twitterUrls = potentialTwitterUrls.filter((url: string) => {
+        if (!url || typeof url !== 'string') return false;
+        
+        // 트위터/X 도메인 포함 여부 확인
+        const isTwitterUrl = url.includes('twitter.com') || url.includes('x.com') || url.startsWith('@');
+        
+        if (isTwitterUrl) {
+          console.log(`✅ 유효한 트위터 URL 발견: ${url}`);
+          return true;
+        }
+        
+        return false;
+      });
 
       if (twitterUrls.length > 0) {
         const twitterUrl = twitterUrls[0]; // 첫 번째 트위터 URL 사용

@@ -124,19 +124,34 @@ export class TwitterService {
       // 기존 계정 확인
       const existingAccount = await this.getTwitterAccountByProjectId(request.project_id);
 
+      // 필수 필드 검증
+      if (!userInfo.id || !userInfo.screen_name || !userInfo.name) {
+        console.error('❌ 필수 Twitter 데이터가 누락됨:', {
+          id: userInfo.id,
+          screen_name: userInfo.screen_name,
+          name: userInfo.name
+        });
+        return {
+          account: null,
+          timeline: [],
+          error: `트위터 계정 데이터가 불완전합니다. (ID: ${userInfo.id || 'null'})`,
+          found: false
+        };
+      }
+
       const accountData = {
         project_id: request.project_id,
         twitter_id: userInfo.id,
         screen_name: (userInfo.screen_name || '').toLowerCase(),
         name: userInfo.name,
         description: userInfo.description || null,
-        profile_image_url: userInfo.profile_image_url,
+        profile_image_url: userInfo.profile_image_url || null,
         profile_banner_url: userInfo.profile_banner_url || null,
-        followers_count: userInfo.followers_count,
-        friends_count: userInfo.friends_count,
-        statuses_count: userInfo.statuses_count,
-        favourites_count: userInfo.favourites_count,
-        verified: userInfo.verified,
+        followers_count: userInfo.followers_count || 0,
+        friends_count: userInfo.friends_count || 0,
+        statuses_count: userInfo.statuses_count || 0,
+        favourites_count: userInfo.favourites_count || 0,
+        verified: userInfo.verified || false,
         location: userInfo.location || null,
         url: userInfo.url || null,
         created_at: userInfo.created_at,
@@ -374,19 +389,31 @@ export class TwitterService {
    * 트위터 URL에서 핸들 추출
    */
   static extractTwitterHandle(url: string): string | null {
+    if (!url || typeof url !== 'string') {
+      return null;
+    }
+
+    console.log(`🔍 트위터 핸들 추출 시도: "${url}"`);
+
     const patterns = [
-      /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/,
+      // 완전한 Twitter/X URL
+      /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)(?:\/.*)?$/,
+      // @ 포함 핸들
       /@([a-zA-Z0-9_]+)/,
+      // 순수 핸들명
       /^([a-zA-Z0-9_]+)$/
     ];
 
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        return match[1].toLowerCase().trim();
+        const handle = match[1].toLowerCase().trim();
+        console.log(`✅ 추출된 핸들: ${handle}`);
+        return handle;
       }
     }
 
+    console.log(`❌ 유효한 트위터 핸들을 추출할 수 없음: "${url}"`);
     return null;
   }
 

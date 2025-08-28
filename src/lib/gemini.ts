@@ -49,8 +49,8 @@ export async function searchProjectInfo(projectName: string) {
   "docs_url": "문서 URL", 
   "blog_url": "블로그 URL",
   "github_url": "GitHub 저장소 URL (공식 organization 또는 main repository)",
-  "project_twitter_url": "프로젝트 공식 트위터 URL",
-  "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (존재하지 않는 계정 제외)"],
+  "project_twitter_url": "프로젝트 공식 트위터 URL (완전한 URL 형태: https://twitter.com/handle 또는 https://x.com/handle)",
+  "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (완전한 URL 형태로, 존재하지 않는 계정 제외)"],
   "market_data": {
     "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
     "current_price_usd": "현재 가격 USD (숫자)",

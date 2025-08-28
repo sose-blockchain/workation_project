@@ -24,11 +24,20 @@ class CryptoRankAPI {
     this.baseUrl = 'https://api.cryptorank.io/v2';
     
     // API 키 검증
+    console.log('🔍 CryptoRank API 키 디버깅:');
+    console.log('- NEXT_PUBLIC_CRYPTORANK_API_KEY:', this.apiKey ? `설정됨 (길이: ${this.apiKey.length})` : '누락됨');
+    console.log('- CRYPTORANK_API_KEY:', process.env.CRYPTORANK_API_KEY ? `설정됨 (길이: ${process.env.CRYPTORANK_API_KEY.length})` : '누락됨');
+    console.log('- 모든 CRYPTORANK 관련 env:', Object.keys(process.env).filter(key => key.includes('CRYPTORANK')));
+    
     if (!this.apiKey) {
       console.warn('⚠️ NEXT_PUBLIC_CRYPTORANK_API_KEY가 설정되지 않았습니다.');
-      console.log('🔍 사용 가능한 환경 변수들:', Object.keys(process.env).filter(key => key.includes('CRYPTORANK')));
+      // 대체 키 시도
+      if (process.env.CRYPTORANK_API_KEY) {
+        console.log('🔄 CRYPTORANK_API_KEY를 대체로 사용합니다.');
+        this.apiKey = process.env.CRYPTORANK_API_KEY;
+      }
     } else {
-      console.log('✅ CryptoRank API 키가 설정되었습니다. (길이:', this.apiKey.length, ')');
+      console.log('✅ CryptoRank API 키가 설정되었습니다.');
     }
   }
 
