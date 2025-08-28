@@ -1,97 +1,255 @@
-import Link from 'next/link'
+'use client'
 
-export default function Home() {
+import { useState, useEffect } from 'react'
+import ProjectSearch from '@/components/ProjectSearch'
+import ProjectDetail from '@/components/ProjectDetail'
+import ProjectSidebar from '@/components/ProjectSidebar'
+import SearchImprovements from '@/components/SearchImprovements'
+import { Project, CreateProjectRequest, UpdateProjectRequest } from '@/types/project'
+import { supabase } from '@/lib/supabase'
+import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
+
+export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [message, setMessage] = useState('')
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
+  // 컴포넌트 마운트 시 프로젝트 목록 로드
+  useEffect(() => {
+    loadProjects()
+  }, [])
+
+  const loadProjects = async () => {
+    if (!supabase) {
+      console.warn('Supabase is not initialized')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      setProjects(data || [])
+    } catch (error) {
+      console.error('Error loading projects:', error)
+    }
+  }
+
+  const handleSearch = async (projectName: string) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      // AI와 CryptoRank API로 향상된 프로젝트 정보 검색
+      const enhancedResult = await getEnhancedProjectInfo(projectName)
+      
+      // 1. projects 테이블에 기본 정보 저장
+      const { data: newProject, error: projectError } = await supabase
+        .from('projects')
+        .insert([enhancedResult.project])
+        .select()
+        .single()
+
+      if (projectError) {
+        throw projectError
+      }
+
+
+
+      // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
+      // CryptoRank Pro 구독 시 투자 라운드 데이터 저장 예정
+
+      const successMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
+        ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API로 정확한 프로젝트명/심볼 확인)'
+        : '프로젝트가 성공적으로 저장되었습니다!';
+      
+      setMessage(successMessage)
+      setProjects(prev => [newProject, ...prev])
+      
+      // 3초 후 메시지 제거
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error searching and saving project:', error)
+      setMessage('프로젝트 검색 및 저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdate = async (data: UpdateProjectRequest) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update(data)
+        .eq('id', data.id)
+
+      if (error) {
+        throw error
+      }
+
+      setMessage('프로젝트가 성공적으로 수정되었습니다!')
+      await loadProjects() // 목록 새로고침
+      
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error updating project:', error)
+      setMessage('프로젝트 수정 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!supabase) {
+      setMessage('Supabase 연결이 설정되지 않았습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+
+      setMessage('프로젝트가 성공적으로 삭제되었습니다!')
+      await loadProjects() // 목록 새로고침
+      setSelectedProject(null)
+      
+      setTimeout(() => {
+        setMessage('')
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      setMessage('프로젝트 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-white flex flex-col">
-      {/* 헤더 */}
-      <header className="p-6 flex justify-between items-center">
-        <div className="text-sm text-gray-700">
-          프로젝트 정보 · 스토어 
-        </div>
-        <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-full hover:bg-gray-100">
-            <svg className="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z"/>
-            </svg>
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-            로그인
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white">
+      {/* 사이드바 */}
+      <ProjectSidebar 
+        projects={projects}
+        onProjectSelect={setSelectedProject}
+        selectedProject={selectedProject}
+        onToggle={setIsSidebarOpen}
+      />
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 flex flex-col justify-center items-center px-4">
-        <div className="text-center mb-8 max-w-2xl">
-          <div className="mb-8">
-            <svg className="w-20 h-20 mx-auto mb-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
+      <div className={`min-h-screen flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+        {/* 상단 헤더 */}
+        <div className="flex justify-end items-center p-4">
+          <button 
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-          </div>
-          <h1 className="text-6xl font-normal text-gray-900 mb-6">
-            <span className="text-blue-600">프로젝트</span> 리서치
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            블록체인 프로젝트의 종합적인 정보를 AI로 자동 수집하는 플랫폼
-          </p>
-        </div>
-
-        {/* Google 스타일 기능 버튼들 */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <Link 
-            href="/research"
-            className="bg-gray-50 border border-gray-300 rounded-md px-6 py-3 text-sm text-gray-700 hover:shadow-md hover:border-gray-400 transition-all duration-200"
-          >
-            프로젝트 리서치
-          </Link>
-          <Link 
-            href="/sns"
-            className="bg-gray-50 border border-gray-300 rounded-md px-6 py-3 text-sm text-gray-700 hover:shadow-md hover:border-gray-400 transition-all duration-200"
-          >
-            SNS 분석
-          </Link>
-          <button className="bg-gray-50 border border-gray-300 rounded-md px-6 py-3 text-sm text-gray-700 hover:shadow-md hover:border-gray-400 transition-all duration-200">
-            AI 요약
+            홈으로
           </button>
         </div>
 
-        {/* 검색 제안 */}
-        <div className="text-center text-sm text-gray-600 mb-8">
-          <p>다른 지역의 Workation도 사용해 보세요: 
-            <a href="#" className="text-blue-600 hover:underline ml-1">English</a>
-          </p>
-        </div>
-      </div>
+        {/* 메시지 표시 */}
+        {message && (
+          <div className={`mx-4 mt-4 p-4 rounded-md ${
+            message.includes('성공') 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {message}
+          </div>
+        )}
 
-      {/* 하단 설명 섹션 */}
-      <div className="bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-blue-600 text-2xl mb-3">🔍</div>
-              <h3 className="font-medium text-gray-900 mb-2">프로젝트 리서치</h3>
-              <p className="text-sm text-gray-600">
-                AI가 자동으로 프로젝트 정보를 수집하고 분석합니다
-              </p>
+        {/* Google 스타일 중앙 정렬 검색 */}
+        <div className="flex-1 flex flex-col justify-center items-center px-4 -mt-16">
+          <ProjectSearch onSearch={handleSearch} isLoading={isLoading} />
+          
+          {/* 최근 프로젝트 표시 (검색어가 없을 때만) */}
+          {projects.length > 0 && (
+            <div className="mt-8 w-full max-w-2xl">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">최근 프로젝트</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {projects.slice(0, 4).map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => setSelectedProject(project)}
+                    className="text-left p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200"
+                  >
+                    <div className="font-medium text-gray-900 text-sm">{project.name}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {project.token_symbol ? project.token_symbol : (
+                        <span className="text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-xs">
+                          Pre-TGE
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-green-600 text-2xl mb-3">📱</div>
-              <h3 className="font-medium text-gray-900 mb-2">SNS 분석</h3>
-              <p className="text-sm text-gray-600">
-                팀원들의 소셜미디어 활동도를 측정합니다
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-purple-600 text-2xl mb-3">📊</div>
-              <h3 className="font-medium text-gray-900 mb-2">종합 보고서</h3>
-              <p className="text-sm text-gray-600">
-                모든 데이터를 종합한 인사이트를 제공합니다
-              </p>
+          )}
+        </div>
+
+        {/* 하단 링크 */}
+        <div className="py-3 bg-gray-50 border-t">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="flex flex-wrap justify-center gap-4 text-xs">
+              <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Privacy</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Terms</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Settings</a>
             </div>
           </div>
         </div>
       </div>
 
-    </main>
+      {/* 프로젝트 상세 모달 */}
+      {selectedProject && (
+        <ProjectDetail
+          project={selectedProject}
+          onUpdate={handleUpdate}
+          onDelete={handleDelete}
+          onClose={() => setSelectedProject(null)}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
   )
 }
