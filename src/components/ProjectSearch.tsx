@@ -31,36 +31,31 @@ export default function ProjectSearch({ onSearch, isLoading = false }: ProjectSe
         </p>
       </div>
 
-      {/* Google 스타일 검색창 - 확대된 버전 */}
-      <div className="bg-white rounded-full shadow-xl border border-gray-200 p-4 mb-8 w-full max-w-4xl mx-auto">
+      {/* Google 스타일 검색창 - 가로 확장 */}
+      <div className="bg-white rounded-full shadow-lg border border-gray-200 p-2 mb-8 w-full max-w-5xl mx-auto">
         <form onSubmit={handleSubmit} className="flex items-center">
-          <div className="flex-1 px-6">
+          <div className="flex-1 px-4">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="프로젝트명을 입력하세요 (예: Ethereum, Bitcoin, Solana)"
-              className="w-full text-xl text-gray-900 bg-transparent border-none outline-none placeholder-gray-500 py-2"
+              className="w-full text-lg text-gray-900 bg-transparent border-none outline-none placeholder-gray-500"
               disabled={isLoading}
             />
           </div>
           <button
             type="submit"
             disabled={isLoading || !searchTerm.trim()}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-10 py-4 rounded-full font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 검색 중...
               </div>
             ) : (
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                AI 리서치 시작
-              </div>
+              'AI 리서치 시작'
             )}
           </button>
         </form>
