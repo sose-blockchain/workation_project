@@ -156,6 +156,8 @@ export interface TwitterSearchResult {
   account: TwitterAccount | null;
   timeline: TwitterTimeline[];
   error?: string;
+  errorCode?: string;
+  userMessage?: string;
   found: boolean;
 }
 

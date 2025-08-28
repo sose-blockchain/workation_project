@@ -9,45 +9,61 @@ import {
   TwitterSearchResult,
   TwitterProjectOverview
 } from '@/types/twitter';
+import { AppErrorHandler, SupabaseError } from '@/types/error';
 
 export class TwitterService {
   
+  /**
+   * Supabase 오류 처리 헬퍼 함수
+   */
+  private handleSupabaseError(error: any, context: string): SupabaseError {
+    const supabaseError = AppErrorHandler.createSupabaseError(error, context);
+    AppErrorHandler.logError(supabaseError);
+    return supabaseError;
+  }
+
   /**
    * 프로젝트의 트위터 계정 정보 조회
    */
   async getTwitterAccountByProjectId(projectId: string): Promise<TwitterAccount | null> {
     if (!supabase) {
-      console.error('Supabase client is not initialized');
+      console.error('❌ Supabase 클라이언트가 초기화되지 않음');
       return null;
     }
 
     try {
-      console.log(`🔍 Supabase에서 Twitter 계정 조회: project_id=${projectId}`);
+      console.log(`🔍 Twitter 계정 조회 시작: project_id=${projectId}`);
       
-      const { data, error } = await supabase
+      // 먼저 마침표 없이 조회 시도 (존재 여부 확인)
+      const { data: accounts, error: listError } = await supabase
         .from('twitter_accounts')
         .select('*')
-        .eq('project_id', projectId)
-        .single();
+        .eq('project_id', projectId);
 
-      if (error) {
-        if (error.code === 'PGRST116') { // No rows found
-          console.log(`❌ Twitter 계정을 찾을 수 없음: project_id=${projectId}`);
-          return null;
-        }
-        console.error(`❌ Supabase Twitter 조회 오류:`, {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
+      if (listError) {
+        this.handleSupabaseError(listError, `Twitter 계정 조회 (project_id: ${projectId})`);
+        return null;
       }
 
-      console.log(`✅ Twitter 계정 찾음: @${data.screen_name}`);
-      return data as TwitterAccount;
-    } catch (error) {
-      console.error('트위터 계정 조회 오류:', error);
+      if (!accounts || accounts.length === 0) {
+        console.log(`📭 Twitter 계정 없음: project_id=${projectId}`);
+        return null;
+      }
+
+      if (accounts.length > 1) {
+        console.warn(`⚠️ 여러 Twitter 계정 발견: project_id=${projectId}, count=${accounts.length}`);
+      }
+
+      const account = accounts[0];
+      console.log(`✅ Twitter 계정 발견: @${account.screen_name} (${account.followers_count} 팔로워)`);
+      return account as TwitterAccount;
+      
+    } catch (error: any) {
+      console.error('❌ Twitter 계정 조회 실패:', {
+        error: error.message || error,
+        project_id: projectId,
+        timestamp: new Date().toISOString()
+      });
       return null;
     }
   }
@@ -57,27 +73,37 @@ export class TwitterService {
    */
   async getTwitterAccountByScreenName(screenName: string): Promise<TwitterAccount | null> {
     if (!supabase) {
-      console.error('Supabase client is not initialized');
+      console.error('❌ Supabase 클라이언트가 초기화되지 않음');
       return null;
     }
 
     try {
-      const { data, error } = await supabase
+      console.log(`🔍 Twitter 계정 조회 (핸들): @${screenName}`);
+      
+      const { data: accounts, error } = await supabase
         .from('twitter_accounts')
         .select('*')
-        .eq('screen_name', screenName.toLowerCase())
-        .single();
+        .eq('screen_name', screenName.toLowerCase());
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          return null;
-        }
-        throw error;
+        this.handleSupabaseError(error, `Twitter 계정 조회 (핸들: @${screenName})`);
+        return null;
       }
 
-      return data as TwitterAccount;
-    } catch (error) {
-      console.error('트위터 계정 조회 오류 (핸들):', error);
+      if (!accounts || accounts.length === 0) {
+        console.log(`📭 Twitter 계정 없음 (핸들): @${screenName}`);
+        return null;
+      }
+
+      const account = accounts[0];
+      console.log(`✅ Twitter 계정 발견 (핸들): @${account.screen_name}`);
+      return account as TwitterAccount;
+      
+    } catch (error: any) {
+      console.error('❌ Twitter 계정 조회 실패 (핸들):', {
+        error: error.message || error,
+        screen_name: screenName
+      });
       return null;
     }
   }
@@ -123,10 +149,13 @@ export class TwitterService {
       ]);
 
       if (!userInfo) {
+        const error = AppErrorHandler.createError('twitter_user_not_found', `@${request.screen_name} 사용자 조회`);
         return {
           account: null,
           timeline: [],
-          error: `'@${request.screen_name}' 사용자를 찾을 수 없습니다.`,
+          error: error.message,
+          errorCode: error.code,
+          userMessage: AppErrorHandler.getUserMessage(error),
           found: false
         };
       }
@@ -144,10 +173,13 @@ export class TwitterService {
           screen_name: userInfo.screen_name,
           name: userInfo.name
         });
+        const error = AppErrorHandler.createError('invalid_input', '트위터 계정 데이터 검증', `ID: ${userInfo.id || 'null'}`);
         return {
           account: null,
           timeline: [],
-          error: `트위터 계정 데이터가 불완전합니다. (ID: ${userInfo.id || 'null'})`,
+          error: error.message,
+          errorCode: error.code,
+          userMessage: AppErrorHandler.getUserMessage(error),
           found: false
         };
       }
@@ -218,12 +250,15 @@ export class TwitterService {
         found: true
       };
 
-    } catch (error) {
-      console.error('트위터 계정 생성/업데이트 오류:', error);
+    } catch (error: any) {
+      const appError = AppErrorHandler.createError('unknown_error', '트위터 계정 생성/업데이트', error.message);
+      AppErrorHandler.logError(appError);
       return {
         account: null,
         timeline: [],
-        error: '트위터 데이터를 저장하는데 실패했습니다.',
+        error: appError.message,
+        errorCode: appError.code,
+        userMessage: AppErrorHandler.getUserMessage(appError),
         found: false
       };
     }
