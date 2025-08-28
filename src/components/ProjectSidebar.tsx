@@ -8,15 +8,24 @@ interface ProjectSidebarProps {
   projects: Project[]
   onProjectSelect: (project: Project) => void
   selectedProject?: Project | null
+  onToggle: (isOpen: boolean) => void
 }
 
 export default function ProjectSidebar({ 
   projects, 
   onProjectSelect, 
-  selectedProject 
+  selectedProject,
+  onToggle 
 }: ProjectSidebarProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true) // 기본적으로 열려있음
   const [searchTerm, setSearchTerm] = useState('')
+
+  // 사이드바 상태 변경 시 부모 컴포넌트에 알림
+  const handleToggle = () => {
+    const newState = !isOpen
+    setIsOpen(newState)
+    onToggle(newState)
+  }
 
   // 검색 필터링
   const filteredProjects = projects.filter(project => 
@@ -34,46 +43,26 @@ export default function ProjectSidebar({
     <>
       {/* 토글 버튼 */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed top-20 left-4 z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 ${
-          isOpen ? 'transform rotate-180' : ''
-        }`}
+        onClick={handleToggle}
+        className={`fixed top-4 ${isOpen ? 'left-80' : 'left-4'} z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200`}
       >
-        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-5 h-5 text-gray-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
-      {/* 오버레이 */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
       {/* 사이드바 */}
-      <div className={`fixed top-0 left-0 h-full w-96 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+      <div className={`fixed top-0 left-0 h-full w-96 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                </svg>
-              </div>
-              <span className="ml-3 font-medium text-gray-900">프로젝트 관리</span>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-full hover:bg-gray-100"
-            >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
               </svg>
-            </button>
+            </div>
+            <span className="ml-3 font-medium text-gray-900">프로젝트 관리</span>
           </div>
         </div>
 
@@ -114,7 +103,6 @@ export default function ProjectSidebar({
                     key={project.id}
                     onClick={() => {
                       onProjectSelect(project)
-                      setIsOpen(false)
                     }}
                     className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 ${
                       selectedProject?.id === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'

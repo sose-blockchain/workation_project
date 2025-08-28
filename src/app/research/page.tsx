@@ -15,6 +15,7 @@ export default function ResearchPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [message, setMessage] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // 컴포넌트 마운트 시 프로젝트 목록 로드
   useEffect(() => {
@@ -168,22 +169,22 @@ export default function ResearchPage() {
         projects={projects}
         onProjectSelect={setSelectedProject}
         selectedProject={selectedProject}
+        onToggle={setIsSidebarOpen}
       />
 
       {/* 메인 컨텐츠 */}
-      <div className="min-h-screen flex flex-col">
+      <div className={`min-h-screen flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-96' : 'ml-0'}`}>
         {/* 상단 헤더 */}
-        <div className="flex justify-between items-center p-4">
-          <h1 className="text-xl font-semibold text-gray-900">DeSpread</h1>
-          <Link 
-            href="/"
+        <div className="flex justify-end items-center p-4">
+          <button 
+            onClick={() => window.location.href = '/'}
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             홈으로
-          </Link>
+          </button>
         </div>
 
         {/* 메시지 표시 */}
