@@ -197,7 +197,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">투자 정보</h3>
+        <h3 className="text-lg font-semibold text-gray-900">투자 정보</h3>
         <button
           onClick={() => setShowForm(true)}
           className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50"
@@ -208,7 +208,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
 
       {/* 투자 목록 */}
       {isLoading ? (
-        <div className="text-center py-4">로딩 중...</div>
+        <div className="text-center py-4 text-gray-700">로딩 중...</div>
       ) : investments.length === 0 ? (
         <div className="text-gray-500 text-center py-4">투자 정보가 없습니다.</div>
       ) : (
@@ -238,12 +238,12 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
                     </div>
                   )}
                   {(investment.valuation_pre_money_usd || investment.valuation_post_money_usd) && (
-                    <div className="text-xs text-gray-500 space-x-4">
+                    <div className="text-xs text-gray-600 space-x-4">
                       {investment.valuation_pre_money_usd && (
-                        <span>Pre-money: {formatAmount(investment.valuation_pre_money_usd)}</span>
+                        <span className="text-gray-700">Pre-money: {formatAmount(investment.valuation_pre_money_usd)}</span>
                       )}
                       {investment.valuation_post_money_usd && (
-                        <span>Post-money: {formatAmount(investment.valuation_post_money_usd)}</span>
+                        <span className="text-gray-700">Post-money: {formatAmount(investment.valuation_post_money_usd)}</span>
                       )}
                     </div>
                   )}

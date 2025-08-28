@@ -481,12 +481,18 @@ export default function ProjectDetail({
                   <h3 className="text-sm font-medium text-gray-500">프로젝트명</h3>
                   <p className="text-lg text-gray-900">{project.name}</p>
                 </div>
-                {project.token_symbol && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">토큰 심볼</h3>
-                    <p className="text-lg text-gray-900">{project.token_symbol}</p>
-                  </div>
-                )}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">토큰 심볼</h3>
+                  <p className="text-lg text-gray-900">
+                    {project.token_symbol ? (
+                      project.token_symbol
+                    ) : (
+                      <span className="text-orange-600 bg-orange-50 px-2 py-1 rounded text-sm font-medium">
+                        Pre-TGE
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
 
               {project.description && (

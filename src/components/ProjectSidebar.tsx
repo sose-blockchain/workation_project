@@ -121,9 +121,13 @@ export default function ProjectSidebar({
                     }`}
                   >
                     <div className="font-medium">{project.name}</div>
-                    {project.token_symbol && (
-                      <div className="text-xs text-gray-500">{project.token_symbol}</div>
-                    )}
+                    <div className="text-xs text-gray-500">
+                      {project.token_symbol ? project.token_symbol : (
+                        <span className="text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-xs">
+                          Pre-TGE
+                        </span>
+                      )}
+                    </div>
                     {(project.keyword1 || project.keyword2 || project.keyword3) && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {project.keyword1 && (

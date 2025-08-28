@@ -181,6 +181,20 @@ export default function ResearchPage() {
 
       {/* 메인 컨텐츠 */}
       <div className="min-h-screen flex flex-col">
+        {/* 상단 헤더 */}
+        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+          <h1 className="text-xl font-semibold text-gray-900">프로젝트 리서치</h1>
+          <a 
+            href="/"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            홈으로
+          </a>
+        </div>
+
         {/* 메시지 표시 */}
         {message && (
           <div className={`mx-4 mt-4 p-4 rounded-md ${
@@ -193,7 +207,7 @@ export default function ResearchPage() {
         )}
 
         {/* Google 스타일 중앙 정렬 검색 */}
-        <div className="flex-1 flex flex-col justify-center items-center px-4">
+        <div className="flex-1 flex flex-col justify-center items-center px-4 -mt-16">
           <ProjectSearch onSearch={handleSearch} isLoading={isLoading} />
           
           {/* 최근 프로젝트 표시 (검색어가 없을 때만) */}
@@ -208,9 +222,13 @@ export default function ResearchPage() {
                     className="text-left p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200"
                   >
                     <div className="font-medium text-gray-900 text-sm">{project.name}</div>
-                    {project.token_symbol && (
-                      <div className="text-xs text-gray-500 mt-1">{project.token_symbol}</div>
-                    )}
+                    <div className="text-xs text-gray-500 mt-1">
+                      {project.token_symbol ? project.token_symbol : (
+                        <span className="text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-xs">
+                          Pre-TGE
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>

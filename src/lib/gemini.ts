@@ -41,9 +41,9 @@ export async function searchProjectInfo(projectName: string) {
   "name": "프로젝트명을 영문 소문자로 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 이름)",
   "token_symbol": "토큰 심볼 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 심볼)",
   "description": "프로젝트에 대한 한글 설명 (2-3문장으로 자세히)",
-  "keyword1": "Layer1, Layer2, DApp 중 하나 (프로젝트 분류)",
-  "keyword2": "keyword1의 세부 디테일 (예: Smart Contract, DeFi, GameFi, Infrastructure)",
-  "keyword3": "특별한 기술이나 차별점 (예: Zero-Knowledge, Interoperability, AI-Powered)",
+  "keyword1": "Layer1, Layer2, DApp 중 정확히 하나만 선택 (프로젝트의 기본 분류)",
+  "keyword2": "keyword1과 다른 세부 영역 (예: DeFi, GameFi, Infrastructure, NFT, Bridge, DEX 등)",
+  "keyword3": "keyword1, keyword2와 중복되지 않는 고유 기술 특징 (예: Zero-Knowledge, Cross-Chain, AI-Powered 등)",
   "homepage_url": "공식 홈페이지 URL",
   "whitepaper_url": "백서 URL",
   "docs_url": "문서 URL", 
@@ -71,7 +71,8 @@ export async function searchProjectInfo(projectName: string) {
       "valuation_post_money_usd": "Post-money 밸류에이션 USD (숫자)",
       "lead_investor": "리드 투자자",
       "investors": ["주요 투자자 리스트"],
-      "data_source": "데이터 소스 (cryptorank, crunchbase 중 하나)"
+      "data_source": "실제 데이터 출처 (cryptorank.io, crunchbase.com, coindesk.com, cointelegraph.com 등 실제 웹사이트명)",
+      "source_url": "해당 투자 정보를 확인할 수 있는 실제 URL"
     }
   ],
   "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
@@ -89,11 +90,14 @@ export async function searchProjectInfo(projectName: string) {
 
 주의사항:
 - name과 token_symbol은 반드시 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
-- keyword1은 반드시 Layer1, Layer2, DApp 중 하나로 분류
-- keyword2는 keyword1의 구체적인 세부 영역
-- keyword3는 해당 프로젝트만의 독특한 기술적 특징
+- keyword1은 반드시 Layer1, Layer2, DApp 중 정확히 하나만 선택
+- keyword2는 keyword1과 중복되지 않는 구체적인 영역 (DeFi, GameFi, NFT 등)
+- keyword3는 keyword1, keyword2와 완전히 다른 고유한 기술적 특징
+- 각 키워드는 서로 중복되지 않아야 함
 - market_data는 최신 가격/시장 정보 (coinmarketcap, coingecko, cryptorank)
-- investment_rounds는 Cryptorank, Crunchbase에서 확인된 모든 투자 라운드
+- investment_rounds는 Cryptorank, Crunchbase, CoinDesk, CoinTelegraph 등에서 확인된 모든 투자 라운드
+- data_source는 반드시 실제 웹사이트명 (예: cryptorank.io, crunchbase.com)
+- source_url은 해당 투자 정보를 확인할 수 있는 실제 링크
 - 찾을 수 없는 정보는 null로 설정
 - 반드시 유효한 JSON 형태로만 응답
 `
