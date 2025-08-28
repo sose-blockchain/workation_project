@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Project, UpdateProjectRequest } from '@/types/project'
+import { Investment } from '@/types/investment'
 import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
+import InvestmentManager from './InvestmentManager'
+import MarketDataManager from './MarketDataManager'
 
 interface ProjectDetailProps {
   project: Project
@@ -584,6 +587,27 @@ export default function ProjectDetail({
                   </div>
                 </div>
               )}
+
+              {/* 마켓 데이터 섹션 */}
+              <div className="pt-4 border-t">
+                <MarketDataManager 
+                  projectId={project.id}
+                  onMarketDataChange={(marketData) => {
+                    console.log('Market data updated:', marketData);
+                  }}
+                />
+              </div>
+
+              {/* 투자 정보 섹션 */}
+              <div className="pt-4 border-t">
+                <InvestmentManager 
+                  projectId={project.id}
+                  onInvestmentsChange={(investments) => {
+                    // 투자 정보 변경 시 필요한 로직 추가 가능
+                    console.log('Investment data updated:', investments);
+                  }}
+                />
+              </div>
 
               <div className="pt-4 border-t">
                 <p className="text-sm text-gray-500">
