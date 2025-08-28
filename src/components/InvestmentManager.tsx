@@ -8,13 +8,16 @@ interface InvestmentManagerProps {
 }
 
 export default function InvestmentManager({ projectId, onInvestmentsChange }: InvestmentManagerProps) {
+  console.log('InvestmentManager rendering for project:', projectId);
+  
+  // 기존 투자 데이터를 숨기고 프리미엄 안내만 표시
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">투자 정보</h3>
       </div>
 
-      {/* 프리미엄 기능 안내 */}
+      {/* 프리미엄 기능 안내 - 기존 투자 데이터 대신 표시 */}
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
           <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,11 +42,17 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
           </div>
         </div>
         
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 mb-4">
           정확하고 최신의 투자 라운드 정보가 필요하신 경우 
           <span className="font-medium"> CryptoRank Pro </span>
           구독을 고려해주세요.
         </p>
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-sm text-yellow-800">
+            <strong>알림:</strong> 기존에 표시되던 AI 기반 투자 정보는 정확성 문제로 인해 비활성화되었습니다.
+          </p>
+        </div>
         
         <div className="mt-6">
           <a

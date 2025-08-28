@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Project, UpdateProjectRequest } from '@/types/project'
 import { Investment } from '@/types/investment'
 import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
-import InvestmentManager from './InvestmentManager'
+import PremiumInvestmentNotice from './PremiumInvestmentNotice'
 
 
 interface ProjectDetailProps {
@@ -598,13 +598,7 @@ export default function ProjectDetail({
 
               {/* 투자 정보 섹션 */}
               <div className="pt-4 border-t">
-                <InvestmentManager 
-                  projectId={project.id}
-                  onInvestmentsChange={(investments) => {
-                    // 투자 정보 변경 시 필요한 로직 추가 가능
-                    console.log('Investment data updated:', investments);
-                  }}
-                />
+                <PremiumInvestmentNotice projectId={project.id} />
               </div>
 
               <div className="pt-4 border-t">
