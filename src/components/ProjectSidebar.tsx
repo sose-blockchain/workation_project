@@ -44,7 +44,7 @@ export default function ProjectSidebar({
       {/* 토글 버튼 */}
       <button
         onClick={handleToggle}
-        className={`fixed top-4 ${isOpen ? 'left-80' : 'left-4'} z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200`}
+        className={`fixed top-4 ${isOpen ? 'left-52' : 'left-4'} z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200`}
       >
         <svg className={`w-5 h-5 text-gray-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -52,7 +52,7 @@ export default function ProjectSidebar({
       </button>
 
       {/* 사이드바 */}
-      <div className={`fixed top-0 left-0 h-full w-96 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${
+      <div className={`fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="p-6 border-b border-gray-200">

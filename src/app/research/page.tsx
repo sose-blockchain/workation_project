@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import ProjectSearch from '@/components/ProjectSearch'
 import ProjectDetail from '@/components/ProjectDetail'
 import ProjectSidebar from '@/components/ProjectSidebar'
@@ -11,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
 
 export default function ResearchPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [message, setMessage] = useState('')
@@ -173,11 +175,11 @@ export default function ResearchPage() {
       />
 
       {/* 메인 컨텐츠 */}
-      <div className={`min-h-screen flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-96' : 'ml-0'}`}>
+      <div className={`min-h-screen flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
         {/* 상단 헤더 */}
         <div className="flex justify-end items-center p-4">
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

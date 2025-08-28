@@ -23,10 +23,10 @@ export default function ProjectSearch({ onSearch, isLoading = false }: ProjectSe
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
           프로젝트 리서치
         </h1>
-        <p className="text-lg text-gray-600 mb-8">
+        <p className="text-base text-gray-600 mb-8">
           프로젝트명을 입력하면 AI가 자동으로 정보를 수집합니다
         </p>
       </div>
@@ -39,8 +39,8 @@ export default function ProjectSearch({ onSearch, isLoading = false }: ProjectSe
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="프로젝트명을 입력하세요 (예: Ethereum, Bitcoin, Solana)"
-              className="w-full text-lg text-gray-900 bg-transparent border-none outline-none placeholder-gray-500"
+              placeholder="프로젝트명을 입력하세요"
+              className="w-full text-sm text-gray-900 bg-transparent border-none outline-none placeholder-gray-500"
               disabled={isLoading}
             />
           </div>
