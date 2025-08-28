@@ -29,15 +29,18 @@ export default function HomePage() {
     }
 
     try {
+      console.log('🔍 프로젝트 목록 로드 중...')
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) {
+        console.error('❌ 프로젝트 로드 오류:', error)
         throw error
       }
 
+      console.log(`✅ 프로젝트 ${data?.length || 0}개 로드 완료`)
       setProjects(data || [])
     } catch (error) {
       console.error('Error loading projects:', error)
@@ -54,8 +57,34 @@ export default function HomePage() {
     setMessage('')
     
     try {
+      console.log(`🔍 프로젝트 검색 시작: "${projectName}"`)
+      
+      // 먼저 기존 프로젝트 중복 검사
+      const { data: existingProjects, error: searchError } = await supabase
+        .from('projects')
+        .select('*')
+        .ilike('name', `%${projectName.toLowerCase()}%`)
+
+      if (searchError) {
+        console.error('❌ 기존 프로젝트 검색 오류:', searchError)
+      } else if (existingProjects && existingProjects.length > 0) {
+        console.log(`📋 기존 프로젝트 발견: ${existingProjects.length}개`)
+        const exactMatch = existingProjects.find(p => 
+          p.name.toLowerCase() === projectName.toLowerCase()
+        )
+        
+        if (exactMatch) {
+          console.log(`✅ 정확히 일치하는 프로젝트 발견: ${exactMatch.name}`)
+          setSelectedProject(exactMatch)
+          setMessage(`"${exactMatch.name}" 프로젝트가 이미 존재합니다.`)
+          setTimeout(() => setMessage(''), 3000)
+          return
+        }
+      }
+
       // AI와 CryptoRank API로 향상된 프로젝트 정보 검색
       const enhancedResult = await getEnhancedProjectInfo(projectName)
+      console.log(`🤖 AI 검색 완료: ${enhancedResult.project.name}`)
       
       // 1. projects 테이블에 기본 정보 저장
       const { data: newProject, error: projectError } = await supabase
@@ -65,6 +94,11 @@ export default function HomePage() {
         .single()
 
       if (projectError) {
+        if (projectError.code === '23505') { // Unique constraint violation
+          setMessage(`"${enhancedResult.project.name}" 프로젝트가 이미 존재합니다.`)
+          setTimeout(() => setMessage(''), 3000)
+          return
+        }
         throw projectError
       }
 
@@ -104,7 +138,11 @@ export default function HomePage() {
         : '프로젝트가 성공적으로 저장되었습니다!';
       
       setMessage(baseMessage + twitterMessage)
-      setProjects(prev => [newProject, ...prev])
+      console.log(`✅ 프로젝트 저장 완료: ${newProject.name}`)
+      
+      // 새 프로젝트를 선택하고 목록 새로고침
+      setSelectedProject(newProject)
+      await loadProjects() // 전체 목록 새로고침으로 일관성 유지
       
       // 3초 후 메시지 제거
       setTimeout(() => {

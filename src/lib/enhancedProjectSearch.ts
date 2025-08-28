@@ -30,21 +30,43 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
 
     // 2. Gemini AI로 기본 프로젝트 정보 수집 (투자 라운드 제외)
     const aiResult = await searchProjectInfo(projectName);
-    console.log('Gemini AI result received');
+    console.log('🤖 Gemini AI 응답:', {
+      name: aiResult.project.name,
+      token_symbol: aiResult.project.token_symbol,
+      description: aiResult.project.description?.substring(0, 100) + '...'
+    });
 
-    // 3. CryptoRank에서 가져온 정보로 AI 결과 보완
+    // 3. CryptoRank에서 가져온 정보로 AI 결과 보완 (정확한 매칭 확인)
     let finalProject: any = { ...aiResult.project };
     let basicInfoSource = 'Gemini AI';
 
     if (cryptoRankProject) {
-      // CryptoRank에서 가져온 정확한 정보로 업데이트
-      finalProject = {
-        ...aiResult.project,
-        name: cryptoRankProject.name, // CryptoRank의 정확한 프로젝트명 사용
-        token_symbol: cryptoRankProject.symbol, // CryptoRank의 정확한 심볼 사용
-      };
-      basicInfoSource = 'CryptoRank API + Gemini AI';
-      console.log(`CryptoRank에서 정확한 프로젝트 정보 보완: ${cryptoRankProject.name} (${cryptoRankProject.symbol})`);
+      console.log('🔍 CryptoRank vs AI 프로젝트 비교:', {
+        input: projectName,
+        cryptorank: cryptoRankProject.name,
+        ai: aiResult.project.name
+      });
+
+      // 검색어와 CryptoRank 결과가 유사한지 확인
+      const searchSimilarity = calculateSimilarity(
+        projectName.toLowerCase(),
+        cryptoRankProject.name.toLowerCase()
+      );
+      
+      console.log(`📊 유사도 검사: ${searchSimilarity}%`);
+
+      // 유사도가 70% 이상일 때만 CryptoRank 정보 사용
+      if (searchSimilarity >= 70) {
+        finalProject = {
+          ...aiResult.project,
+          name: cryptoRankProject.name,
+          token_symbol: cryptoRankProject.symbol,
+        };
+        basicInfoSource = 'CryptoRank API + Gemini AI';
+        console.log(`✅ CryptoRank 정보 적용: ${cryptoRankProject.name} (${cryptoRankProject.symbol})`);
+      } else {
+        console.log(`❌ CryptoRank 정보 무시 (유사도 낮음): ${cryptoRankProject.name}`);
+      }
     }
 
     // 4. 트위터 정보 수집 (AI 검색 결과에서 트위터 URL 추출)
@@ -129,6 +151,37 @@ export function normalizeProjectName(name: string): string {
     // 일반적인 토큰 접미사 제거
     .replace(/\s*(token|coin|protocol|finance|network|chain)$/i, '')
     .trim();
+}
+
+// 문자열 유사도 계산 (레벤슈타인 거리 기반)
+function calculateSimilarity(str1: string, str2: string): number {
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+  
+  const maxLength = Math.max(str1.length, str2.length);
+  const distance = matrix[str2.length][str1.length];
+  return Math.round(((maxLength - distance) / maxLength) * 100);
 }
 
 // 여러 프로젝트 일괄 검색

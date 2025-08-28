@@ -34,12 +34,14 @@ export async function searchProjectInfo(projectName: string) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const prompt = `
-다음 블록체인 프로젝트에 대한 정보를 정확한 JSON 형태로만 제공해주세요: ${projectName}
+다음 블록체인 프로젝트에 대한 정보를 정확한 JSON 형태로만 제공해주세요: "${projectName}"
+
+⚠️ 중요: 반드시 "${projectName}" 프로젝트에 대해서만 정보를 제공하세요. 다른 프로젝트(Bitcoin, Ethereum 등)의 정보를 제공하지 마세요.
 
 다음 형식으로 응답해주세요 (다른 텍스트 없이 JSON만):
 {
-  "name": "프로젝트명을 영문 소문자로 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 이름)",
-  "token_symbol": "토큰 심볼 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 심볼. 실제로 거래소에 상장된 토큰만 입력. 상장되지 않았거나 토큰이 없으면 null)",
+  "name": "검색한 프로젝트명과 정확히 일치하는 영문 이름 (${projectName}와 관련된 프로젝트만)",
+  "token_symbol": "해당 프로젝트의 정확한 토큰 심볼 (${projectName} 프로젝트 전용 심볼. 다른 프로젝트 심볼 사용 금지)",
   "description": "프로젝트에 대한 한글 설명 (2-3문장으로 자세히)",
   "keyword1": "Layer1, Layer2, DApp 중 정확히 하나만 선택 (프로젝트의 기본 분류)",
   "keyword2": "keyword1과 다른 세부 영역 (예: DeFi, GameFi, Infrastructure, NFT, Bridge, DEX 등)",
@@ -88,8 +90,11 @@ export async function searchProjectInfo(projectName: string) {
   ]
 }
 
-주의사항:
-- name과 token_symbol은 반드시 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
+🚨 중요 주의사항:
+- 반드시 "${projectName}" 프로젝트에 대해서만 정보를 제공하세요
+- name은 "${projectName}"와 관련된 프로젝트명만 입력 (다른 프로젝트명 절대 금지)
+- token_symbol은 "${projectName}" 프로젝트의 토큰만 입력 (BTC, ETH 등 다른 토큰 심볼 사용 금지)
+- name과 token_symbol은 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
 - token_symbol은 실제로 거래소에서 거래되는 토큰만 입력 (Pre-TGE나 미상장 토큰은 null로 설정)
 - keyword1은 반드시 Layer1, Layer2, DApp 중 정확히 하나만 선택
 - keyword2는 keyword1과 중복되지 않는 구체적인 영역 (DeFi, GameFi, NFT 등)
@@ -118,6 +123,27 @@ export async function searchProjectInfo(projectName: string) {
     
     // JSON 파싱
     const projectInfo = JSON.parse(text)
+    
+    // AI 응답 검증: 검색어와 응답이 일치하는지 확인
+    if (projectInfo.name && projectInfo.name.toLowerCase() !== projectName.toLowerCase()) {
+      console.warn(`⚠️ AI 응답 불일치 감지:`, {
+        requested: projectName,
+        received: projectInfo.name,
+        fixing: '검색어로 수정'
+      });
+      // 검색어로 강제 수정
+      projectInfo.name = projectName.toLowerCase().trim();
+    }
+    
+    // 잘못된 토큰 심볼 검증 (Bitcoin/BTC 방지)
+    if (projectInfo.token_symbol) {
+      const commonWrongSymbols = ['btc', 'eth', 'usdt', 'usdc', 'bnb'];
+      if (commonWrongSymbols.includes(projectInfo.token_symbol.toLowerCase()) && 
+          !projectName.toLowerCase().includes(projectInfo.token_symbol.toLowerCase())) {
+        console.warn(`⚠️ 잘못된 토큰 심볼 감지: ${projectInfo.token_symbol} (검색어: ${projectName})`);
+        projectInfo.token_symbol = null; // 잘못된 심볼 제거
+      }
+    }
     
     // 프로젝트명 정규화 (영문 소문자)
     const normalizedName = projectInfo.name 
