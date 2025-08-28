@@ -218,7 +218,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="font-medium">{investment.round_type}</span>
+                    <span className="font-medium text-gray-900">{investment.round_type}</span>
                     {investment.round_name && (
                       <span className="text-gray-600">({investment.round_name})</span>
                     )}
@@ -229,12 +229,12 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
                   </div>
                   {investment.lead_investor && (
                     <div className="text-sm text-gray-600">
-                      리드 투자자: {investment.lead_investor}
+                      리드 투자자: <span className="text-gray-900">{investment.lead_investor}</span>
                     </div>
                   )}
                   {investment.investors.length > 0 && (
                     <div className="text-sm text-gray-600">
-                      투자자: {investment.investors.filter(i => i.trim()).join(', ')}
+                      투자자: <span className="text-gray-900">{investment.investors.filter(i => i.trim()).join(', ')}</span>
                     </div>
                   )}
                   {(investment.valuation_pre_money_usd || investment.valuation_post_money_usd) && (
@@ -244,6 +244,21 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
                       )}
                       {investment.valuation_post_money_usd && (
                         <span>Post-money: {formatAmount(investment.valuation_post_money_usd)}</span>
+                      )}
+                    </div>
+                  )}
+                  {investment.data_source && (
+                    <div className="text-xs text-gray-400 mt-1">
+                      출처: {investment.data_source}
+                      {investment.source_url && (
+                        <a 
+                          href={investment.source_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="ml-1 text-blue-500 hover:text-blue-700 underline"
+                        >
+                          링크
+                        </a>
                       )}
                     </div>
                   )}

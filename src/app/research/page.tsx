@@ -66,24 +66,9 @@ export default function ResearchPage() {
         throw projectError
       }
 
-      // 2. market_data 테이블에 마켓 데이터 저장 (있는 경우)
-      if (aiResult.market_data && newProject) {
-        const marketData = {
-          project_id: newProject.id,
-          ...aiResult.market_data,
-          data_source: aiResult.market_data.data_source || 'gemini_ai'
-        }
-        
-        const { error: marketError } = await supabase
-          .from('market_data')
-          .insert([marketData])
 
-        if (marketError) {
-          console.warn('마켓 데이터 저장 실패:', marketError)
-        }
-      }
 
-      // 3. investments 테이블에 투자 데이터 저장 (있는 경우)
+      // 2. investments 테이블에 투자 데이터 저장 (있는 경우)
       if (aiResult.investment_rounds && Array.isArray(aiResult.investment_rounds) && newProject) {
         const investmentData = aiResult.investment_rounds.map(round => ({
           project_id: newProject.id,

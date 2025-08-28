@@ -3,9 +3,10 @@
 ## 📋 테이블 구조 개요
 
 ### 1. **projects** - 프로젝트 기본 정보
-### 2. **market_data** - 마켓/가격 정보
-### 3. **investments** - 투자 라운드 정보
-### 4. **sns_accounts** - SNS 계정 정보
+### 2. **investments** - 투자 라운드 정보
+### 3. **sns_accounts** - SNS 계정 정보
+
+> **주의**: market_data 테이블은 제거되었습니다. 마켓 데이터 기능을 사용하지 않습니다.
 
 ---
 
@@ -44,43 +45,7 @@ CREATE TABLE projects (
 );
 ```
 
-### 2️⃣ **market_data 테이블** - 마켓/가격 정보
-```sql
-CREATE TABLE market_data (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  
-  -- 기본 마켓 정보
-  market_cap_rank INTEGER,
-  current_price_usd DECIMAL(20,8),
-  market_cap_usd BIGINT,
-  
-  -- 거래량 및 변동률
-  volume_24h_usd BIGINT,
-  price_change_24h DECIMAL(10,4), -- 24시간 가격 변동률 (%)
-  price_change_7d DECIMAL(10,4),  -- 7일 가격 변동률 (%)
-  price_change_30d DECIMAL(10,4), -- 30일 가격 변동률 (%)
-  
-  -- 공급량 정보
-  circulating_supply BIGINT,
-  total_supply BIGINT,
-  max_supply BIGINT,
-  
-  -- 기타 지표
-  fully_diluted_valuation BIGINT,
-  market_cap_dominance DECIMAL(5,2), -- 시장 점유율 (%)
-  
-  -- 데이터 소스 및 타임스탬프
-  data_source VARCHAR(50) NOT NULL, -- 'coinmarketcap', 'coingecko', 'cryptorank'
-  last_updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  
-  -- 프로젝트별 최신 데이터 제약
-  UNIQUE(project_id, data_source)
-);
-```
-
-### 3️⃣ **investments 테이블** - 투자 라운드 정보
+### 2️⃣ **investments 테이블** - 투자 라운드 정보
 ```sql
 CREATE TABLE investments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -115,7 +80,7 @@ CREATE TABLE investments (
 );
 ```
 
-### 4️⃣ **sns_accounts 테이블** - SNS 계정 정보 (기존 개선)
+### 3️⃣ **sns_accounts 테이블** - SNS 계정 정보 (기존 개선)
 ```sql
 CREATE TABLE sns_accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -191,11 +156,7 @@ CREATE INDEX idx_projects_token_symbol ON projects(token_symbol);
 CREATE INDEX idx_projects_status ON projects(status);
 CREATE INDEX idx_projects_keyword1 ON projects(keyword1);
 
--- market_data 테이블 인덱스
-CREATE INDEX idx_market_data_project_id ON market_data(project_id);
-CREATE INDEX idx_market_data_rank ON market_data(market_cap_rank);
-CREATE INDEX idx_market_data_source ON market_data(data_source);
-CREATE INDEX idx_market_data_updated ON market_data(last_updated_at);
+
 
 -- investments 테이블 인덱스
 CREATE INDEX idx_investments_project_id ON investments(project_id);
@@ -215,21 +176,14 @@ CREATE INDEX idx_sns_accounts_official ON sns_accounts(is_official);
 ## 🔄 마이그레이션 전략
 
 ### 단계별 접근
-1. **새 테이블 생성** (market_data, investments)
-2. **기존 데이터 이관** (필요시)
-3. **애플리케이션 코드 업데이트**
-4. **구 컬럼 제거** (projects 테이블에서)
+1. **market_data 테이블 제거** (더 이상 사용하지 않음)
+2. **investments 테이블 유지** (투자 정보는 계속 사용)
+3. **애플리케이스 코드에서 마켓 데이터 참조 제거**
 
-### 데이터 이관 예시
+### 마켓 데이터 테이블 제거
 ```sql
--- 기존 projects 테이블에서 market_data로 이관
-INSERT INTO market_data (project_id, market_cap_rank, current_price_usd, market_cap_usd, data_source)
-SELECT id, market_cap_rank, current_price_usd, market_cap_usd, 'manual'
-FROM projects 
-WHERE market_cap_rank IS NOT NULL OR current_price_usd IS NOT NULL;
-
--- 기존 investment_rounds JSON에서 investments 테이블로 이관
--- (JSON 파싱 로직 필요)
+-- market_data 테이블 삭제
+DROP TABLE IF EXISTS market_data;
 ```
 
 이렇게 정규화된 구조가 어떠신가요? 각 도메인이 명확하게 분리되어 관리하기 훨씬 수월할 것 같습니다.

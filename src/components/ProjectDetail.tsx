@@ -5,7 +5,7 @@ import { Project, UpdateProjectRequest } from '@/types/project'
 import { Investment } from '@/types/investment'
 import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
 import InvestmentManager from './InvestmentManager'
-import MarketDataManager from './MarketDataManager'
+
 
 interface ProjectDetailProps {
   project: Project
@@ -588,15 +588,7 @@ export default function ProjectDetail({
                 </div>
               )}
 
-              {/* 마켓 데이터 섹션 */}
-              <div className="pt-4 border-t">
-                <MarketDataManager 
-                  projectId={project.id}
-                  onMarketDataChange={(marketData) => {
-                    console.log('Market data updated:', marketData);
-                  }}
-                />
-              </div>
+
 
               {/* 투자 정보 섹션 */}
               <div className="pt-4 border-t">
