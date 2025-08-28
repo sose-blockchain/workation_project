@@ -102,31 +102,34 @@ class TwitterAPI {
       }
 
       // 응답 데이터 매핑 (다양한 필드명 시도)
-      const mappedData = {
-        id: String(
-          data.id_str || data.id || data.user_id || data.twitter_id || `temp_${Date.now()}`
-        ),
-        name: data.name || data.display_name || data.full_name || 'Unknown User',
-        screen_name: data.screen_name || data.username || data.handle || screenname,
-        description: data.description || data.bio || data.about || '',
-        profile_image_url: 
-          data.profile_image_url_https || 
-          data.profile_image_url || 
-          data.avatar_url || 
-          data.profile_pic || 
-          data.image_url || '',
-        followers_count: Number(
-          data.followers_count || 
-          data.follower_count || 
-          data.followers || 
-          0
-        ),
-        friends_count: Number(
-          data.friends_count || 
-          data.following_count || 
-          data.following || 
-          0
-        ),
+              const mappedData = {
+          id: String(
+            data.id_str || data.id || data.user_id || data.twitter_id || data.rest_id || `temp_${Date.now()}`
+          ),
+          name: data.name || data.display_name || data.full_name || 'Unknown User',
+          screen_name: data.screen_name || data.username || data.handle || data.profile || screenname,
+          description: data.description || data.bio || data.about || data.desc || '',
+          profile_image_url:
+            data.profile_image_url_https ||
+            data.profile_image_url ||
+            data.avatar_url ||
+            data.profile_pic ||
+            data.image_url ||
+            data.avatar || '',
+          followers_count: Number(
+            data.followers_count ||
+            data.follower_count ||
+            data.followers ||
+            data.sub_count ||
+            0
+          ),
+          friends_count: Number(
+            data.friends_count ||
+            data.following_count ||
+            data.following ||
+            data.friends ||
+            0
+          ),
         statuses_count: Number(
           data.statuses_count || 
           data.tweet_count || 
