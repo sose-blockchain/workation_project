@@ -22,8 +22,10 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
     let cryptoRankProject = null;
     try {
       cryptoRankProject = await cryptoRankAPI.getProjectInfo(projectName);
+      console.log('✅ CryptoRank API 호출 성공');
     } catch (cryptoRankError) {
-      console.warn('CryptoRank API 호출 실패:', cryptoRankError);
+      console.warn('⚠️ CryptoRank API 호출 실패 (계속 진행):', cryptoRankError);
+      // CryptoRank 실패해도 계속 진행
     }
 
     // 2. Gemini AI로 기본 프로젝트 정보 수집 (투자 라운드 제외)

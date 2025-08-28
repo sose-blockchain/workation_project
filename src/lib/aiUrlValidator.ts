@@ -86,7 +86,7 @@ export class AIUrlValidator {
       // URL 콘텐츠 가져오기
       const content = await this.fetchUrlContent(url)
       
-      const model = this.genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const model = this.genAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
       const prompt = `
 다음 URL이 "${projectName}" 블록체인 프로젝트의 ${urlType}로 적절한지 분석해주세요.
@@ -219,7 +219,7 @@ URL 유형: ${urlType}
       if (!this.ensureInitialized()) {
         return ['Gemini AI 초기화 실패로 분석할 수 없습니다']
       }
-      const model = this.genAI!.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const model = this.genAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
       const prompt = `
 "${project.name}" 프로젝트의 URL 분석 결과를 바탕으로 전체적인 개선 제안을 해주세요.

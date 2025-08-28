@@ -26,8 +26,9 @@ class CryptoRankAPI {
     // API 키 검증
     if (!this.apiKey) {
       console.warn('⚠️ NEXT_PUBLIC_CRYPTORANK_API_KEY가 설정되지 않았습니다.');
+      console.log('🔍 사용 가능한 환경 변수들:', Object.keys(process.env).filter(key => key.includes('CRYPTORANK')));
     } else {
-      console.log('✅ CryptoRank API 키가 설정되었습니다.');
+      console.log('✅ CryptoRank API 키가 설정되었습니다. (길이:', this.apiKey.length, ')');
     }
   }
 

@@ -33,12 +33,21 @@ export default function TwitterInfo({ projectId, twitterUrl }: TwitterInfoProps)
         // 타임라인도 함께 로드
         const timelineData = await twitterService.getTwitterTimeline(existingAccount.id, 10)
         setTimeline(timelineData)
+        console.log('✅ 기존 트위터 데이터 로드 완료')
       } else if (twitterUrl) {
         // 트위터 URL이 제공된 경우 새로 수집
+        console.log('🔄 새로운 트위터 데이터 수집 시작')
         await fetchTwitterDataFromUrl()
+      } else {
+        console.log('ℹ️ 트위터 정보가 없습니다.')
       }
     } catch (err) {
-      console.error('트위터 데이터 로드 실패:', err)
+      console.error('❌ 트위터 데이터 로드 실패:', err)
+      // Supabase 테이블이 없는 경우 사용자에게 표시하지 않음
+      if (err instanceof Error && err.message.includes('406')) {
+        console.warn('⚠️ 트위터 테이블이 존재하지 않습니다. 마이그레이션이 필요합니다.')
+        return; // 오류 표시하지 않고 조용히 종료
+      }
       setError('트위터 데이터를 불러오는데 실패했습니다.')
     } finally {
       setLoading(false)

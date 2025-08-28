@@ -582,6 +582,14 @@ export default function ProjectDetail({
                 </div>
               )}
 
+              {/* 트위터 정보 섹션 */}
+              <div className="pt-4 border-t">
+                <TwitterInfo 
+                  projectId={project.id}
+                  twitterUrl={project.detected_twitter_url}
+                />
+              </div>
+
               {project.team_twitter_urls && project.team_twitter_urls.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">주요 팀원 트위터</h3>
@@ -595,19 +603,9 @@ export default function ProjectDetail({
                 </div>
               )}
 
-
-
               {/* 투자 정보 섹션 */}
               <div className="pt-4 border-t">
                 <PremiumInvestmentNotice projectId={project.id} />
-              </div>
-
-              {/* 트위터 정보 섹션 */}
-              <div className="pt-4 border-t">
-                <TwitterInfo 
-                  projectId={project.id}
-                  twitterUrl={project.detected_twitter_url}
-                />
               </div>
 
               <div className="pt-4 border-t">

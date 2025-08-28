@@ -45,6 +45,9 @@ class TwitterAPI {
       });
 
       if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error(`Twitter API Rate Limit: 너무 많은 요청입니다. 잠시 후 다시 시도해주세요.`);
+        }
         throw new Error(`Twitter API request failed: ${response.status}`);
       }
 
