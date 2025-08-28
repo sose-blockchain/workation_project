@@ -234,19 +234,8 @@ export default function TwitterInfo({ projectId, twitterUrl }: TwitterInfoProps)
             </div>
             <p className="text-gray-600">@{account.screen_name}</p>
             
-            {/* 활동도 점수 */}
-            <div className="mt-2 flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <span className="text-sm text-gray-500">활동도 점수:</span>
-                <span className={`text-sm font-semibold px-2 py-1 rounded-full ${
-                  account.activity_score >= 80 ? 'bg-green-100 text-green-800' :
-                  account.activity_score >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                  account.activity_score >= 40 ? 'bg-orange-100 text-orange-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {account.activity_score}/100
-                </span>
-              </div>
+            {/* 마지막 업데이트 정보 */}
+            <div className="mt-2">
               <div className="text-xs text-gray-500">
                 마지막 업데이트: {new Date(account.last_updated).toLocaleDateString('ko-KR')}
               </div>
@@ -287,7 +276,7 @@ export default function TwitterInfo({ projectId, twitterUrl }: TwitterInfoProps)
         )}
 
         {/* 통계 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
             <div className="text-xl font-bold text-gray-900">{formatNumber(account.followers_count)}</div>
             <div className="text-sm text-gray-600">팔로워</div>
@@ -295,14 +284,6 @@ export default function TwitterInfo({ projectId, twitterUrl }: TwitterInfoProps)
           <div className="text-center">
             <div className="text-xl font-bold text-gray-900">{formatNumber(account.friends_count)}</div>
             <div className="text-sm text-gray-600">팔로잉</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-gray-900">{formatNumber(account.statuses_count)}</div>
-            <div className="text-sm text-gray-600">트윗</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-gray-900">{formatNumber(account.favourites_count)}</div>
-            <div className="text-sm text-gray-600">좋아요</div>
           </div>
         </div>
 
