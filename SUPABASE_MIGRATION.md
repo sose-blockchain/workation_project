@@ -2,15 +2,17 @@
 
 ## 📋 변경사항 개요
 
+### 🔄 정규화된 테이블 구조로 변경
+1. **`projects`** - 프로젝트 기본 정보 (기존 + 키워드)
+2. **`market_data`** - 마켓/가격 정보 (신규 테이블)
+3. **`investments`** - 투자 라운드 정보 (신규 테이블)
+4. **`sns_accounts`** - SNS 계정 정보 (기존 개선)
+
 ### 새로 추가된 필드들
 1. **`keyword1`** - 주요 키워드 1 (Layer1/Layer2/DApp 분류)
 2. **`keyword2`** - 주요 키워드 2 (세부 디테일)
 3. **`keyword3`** - 주요 키워드 3 (특별한 기술/차별점)
 4. **`github_url`** - GitHub 저장소 URL
-5. **`market_cap_rank`** - 시가총액 순위
-6. **`current_price_usd`** - 현재 가격 (USD)
-7. **`market_cap_usd`** - 시가총액 (USD)
-8. **`investment_rounds`** - 투자 라운드 정보 (JSON 배열)
 
 ## 🔄 마이그레이션 SQL
 
@@ -45,57 +47,105 @@ ADD COLUMN github_url text DEFAULT NULL;
 COMMENT ON COLUMN projects.github_url IS 'GitHub 저장소 URL';
 ```
 
-### 3. 마켓 데이터 컬럼들 추가
+### 3. 마켓 데이터 전용 테이블 생성
 ```sql
--- 시가총액 순위
-ALTER TABLE projects 
-ADD COLUMN market_cap_rank integer DEFAULT NULL;
-
--- 현재 가격 (USD)
-ALTER TABLE projects 
-ADD COLUMN current_price_usd decimal(20,8) DEFAULT NULL;
-
--- 시가총액 (USD)
-ALTER TABLE projects 
-ADD COLUMN market_cap_usd bigint DEFAULT NULL;
-
--- 컬럼에 설명 추가
-COMMENT ON COLUMN projects.market_cap_rank IS '시가총액 순위 (CoinMarketCap 기준)';
-COMMENT ON COLUMN projects.current_price_usd IS '현재 가격 USD';
-COMMENT ON COLUMN projects.market_cap_usd IS '시가총액 USD';
-```
-
-### 4. 투자 데이터 컬럼 추가
-```sql
--- 투자 라운드 정보 (JSON 배열)
-ALTER TABLE projects 
-ADD COLUMN investment_rounds jsonb DEFAULT NULL;
-
--- 컬럼에 설명 추가
-COMMENT ON COLUMN projects.investment_rounds IS '투자 라운드 정보 JSON 배열';
-```
-
-### 5. 투자 데이터 전용 테이블 생성 (선택사항)
-```sql
--- 투자 정보를 별도 테이블로 관리하려는 경우
-CREATE TABLE investments (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  project_id uuid REFERENCES projects(id) ON DELETE CASCADE,
-  round_type text NOT NULL, -- Seed, Series A, Private Sale, etc.
-  date date NOT NULL,
-  amount_usd bigint NOT NULL,
-  investors text[] NOT NULL, -- 주요 투자자 배열
-  lead_investor text,
-  valuation_usd bigint,
-  notes text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
+CREATE TABLE market_data (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  
+  -- 기본 마켓 정보
+  market_cap_rank INTEGER,
+  current_price_usd DECIMAL(20,8),
+  market_cap_usd BIGINT,
+  
+  -- 거래량 및 변동률
+  volume_24h_usd BIGINT,
+  price_change_24h DECIMAL(10,4), -- 24시간 가격 변동률 (%)
+  price_change_7d DECIMAL(10,4),  -- 7일 가격 변동률 (%)
+  price_change_30d DECIMAL(10,4), -- 30일 가격 변동률 (%)
+  
+  -- 공급량 정보
+  circulating_supply BIGINT,
+  total_supply BIGINT,
+  max_supply BIGINT,
+  
+  -- 기타 지표
+  fully_diluted_valuation BIGINT,
+  market_cap_dominance DECIMAL(5,2), -- 시장 점유율 (%)
+  
+  -- 데이터 소스 및 타임스탬프
+  data_source VARCHAR(50) NOT NULL, -- 'coinmarketcap', 'coingecko', 'cryptorank'
+  last_updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- 프로젝트별 최신 데이터 제약
+  UNIQUE(project_id, data_source)
 );
 
--- 투자 테이블 인덱스 생성
+-- 마켓 데이터 인덱스
+CREATE INDEX idx_market_data_project_id ON market_data(project_id);
+CREATE INDEX idx_market_data_rank ON market_data(market_cap_rank);
+CREATE INDEX idx_market_data_source ON market_data(data_source);
+CREATE INDEX idx_market_data_updated ON market_data(last_updated_at);
+```
+
+### 4. 투자 데이터 전용 테이블 생성
+```sql
+CREATE TABLE investments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  
+  -- 투자 라운드 기본 정보
+  round_type VARCHAR(50) NOT NULL, -- 'Seed', 'Series A', 'Series B', 'Private Sale', 'Public Sale', 'Strategic'
+  round_name VARCHAR(100), -- 'Series A Round', 'Strategic Investment' 등
+  date DATE NOT NULL,
+  
+  -- 투자 금액 정보
+  amount_usd BIGINT NOT NULL,
+  valuation_pre_money_usd BIGINT,
+  valuation_post_money_usd BIGINT,
+  
+  -- 투자자 정보
+  lead_investor VARCHAR(255),
+  investors TEXT[] NOT NULL, -- 주요 투자자 배열
+  investor_count INTEGER,
+  
+  -- 추가 정보
+  announcement_url TEXT,
+  notes TEXT,
+  
+  -- 데이터 소스
+  data_source VARCHAR(50), -- 'cryptorank', 'crunchbase', 'manual'
+  source_url TEXT,
+  
+  -- 타임스탬프
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 투자 테이블 인덱스
 CREATE INDEX idx_investments_project_id ON investments(project_id);
 CREATE INDEX idx_investments_date ON investments(date);
 CREATE INDEX idx_investments_round_type ON investments(round_type);
+CREATE INDEX idx_investments_amount ON investments(amount_usd);
+```
+
+### 5. SNS 계정 테이블 개선
+```sql
+-- 기존 sns_accounts 테이블 업데이트
+ALTER TABLE sns_accounts ADD COLUMN subscriber_count INTEGER DEFAULT 0;
+ALTER TABLE sns_accounts ADD COLUMN last_post_date DATE;
+ALTER TABLE sns_accounts ADD COLUMN posts_last_30d INTEGER DEFAULT 0;
+ALTER TABLE sns_accounts ADD COLUMN engagement_rate DECIMAL(5,2);
+ALTER TABLE sns_accounts ADD COLUMN ai_activity_level VARCHAR(20);
+ALTER TABLE sns_accounts ADD COLUMN is_verified BOOLEAN DEFAULT false;
+ALTER TABLE sns_accounts ADD COLUMN is_official BOOLEAN DEFAULT true;
+ALTER TABLE sns_accounts ADD COLUMN status VARCHAR(20) DEFAULT 'active';
+
+-- SNS 계정 인덱스
+CREATE INDEX idx_sns_accounts_project_id ON sns_accounts(project_id);
+CREATE INDEX idx_sns_accounts_platform ON sns_accounts(platform);
+CREATE INDEX idx_sns_accounts_official ON sns_accounts(is_official);
 ```
 
 ### 3. 변경사항 확인

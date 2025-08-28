@@ -107,6 +107,124 @@ export type Database = {
           updated_at?: string
         }
       }
+      market_data: {
+        Row: {
+          id: string
+          project_id: string
+          market_cap_rank: number | null
+          current_price_usd: number | null
+          market_cap_usd: number | null
+          volume_24h_usd: number | null
+          price_change_24h: number | null
+          price_change_7d: number | null
+          price_change_30d: number | null
+          circulating_supply: number | null
+          total_supply: number | null
+          max_supply: number | null
+          fully_diluted_valuation: number | null
+          market_cap_dominance: number | null
+          data_source: string
+          last_updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          market_cap_rank?: number | null
+          current_price_usd?: number | null
+          market_cap_usd?: number | null
+          volume_24h_usd?: number | null
+          price_change_24h?: number | null
+          price_change_7d?: number | null
+          price_change_30d?: number | null
+          circulating_supply?: number | null
+          total_supply?: number | null
+          max_supply?: number | null
+          fully_diluted_valuation?: number | null
+          market_cap_dominance?: number | null
+          data_source: string
+          last_updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          market_cap_rank?: number | null
+          current_price_usd?: number | null
+          market_cap_usd?: number | null
+          volume_24h_usd?: number | null
+          price_change_24h?: number | null
+          price_change_7d?: number | null
+          price_change_30d?: number | null
+          circulating_supply?: number | null
+          total_supply?: number | null
+          max_supply?: number | null
+          fully_diluted_valuation?: number | null
+          market_cap_dominance?: number | null
+          data_source?: string
+          last_updated_at?: string
+          created_at?: string
+        }
+      }
+      investments: {
+        Row: {
+          id: string
+          project_id: string
+          round_type: string
+          round_name: string | null
+          date: string
+          amount_usd: number
+          valuation_pre_money_usd: number | null
+          valuation_post_money_usd: number | null
+          lead_investor: string | null
+          investors: string[]
+          investor_count: number | null
+          announcement_url: string | null
+          notes: string | null
+          data_source: string | null
+          source_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          round_type: string
+          round_name?: string | null
+          date: string
+          amount_usd: number
+          valuation_pre_money_usd?: number | null
+          valuation_post_money_usd?: number | null
+          lead_investor?: string | null
+          investors: string[]
+          investor_count?: number | null
+          announcement_url?: string | null
+          notes?: string | null
+          data_source?: string | null
+          source_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          round_type?: string
+          round_name?: string | null
+          date?: string
+          amount_usd?: number
+          valuation_pre_money_usd?: number | null
+          valuation_post_money_usd?: number | null
+          lead_investor?: string | null
+          investors?: string[]
+          investor_count?: number | null
+          announcement_url?: string | null
+          notes?: string | null
+          data_source?: string | null
+          source_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       sns_accounts: {
         Row: {
           id: string
