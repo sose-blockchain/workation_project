@@ -16,9 +16,9 @@ export default function PremiumInvestmentNotice({ projectId }: PremiumInvestment
     <div className="space-y-6" key={forceRenderKey} data-component="premium-investment-notice">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">투자 정보</h3>
-        <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-          Updated 2025.1.28 v2
-        </div>
+                           <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                     Updated 2025.1.28 v3
+                   </div>
       </div>
 
       {/* 기존 투자 데이터 안내 */}
