@@ -98,14 +98,17 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       });
 
       if (twitterUrls.length > 0) {
-        const twitterUrl = twitterUrls[0]; // 첫 번째 트위터 URL 사용
-        const handle = TwitterService.extractTwitterHandle(twitterUrl);
+        // 모든 유효한 Twitter URL을 배열로 저장
+        finalProject.detected_twitter_urls = twitterUrls;
+        
+        // 하위 호환성을 위해 첫 번째 URL도 별도로 저장
+        const firstUrl = twitterUrls[0];
+        const handle = TwitterService.extractTwitterHandle(firstUrl);
         
         if (handle) {
-          console.log(`트위터 계정 발견: @${handle}`);
-          // 프로젝트가 저장된 후에 트위터 정보를 수집하기 위해 URL만 저장
-          finalProject.detected_twitter_url = twitterUrl;
-          twitterDataSource = 'AI 검색 결과에서 추출';
+          console.log(`트위터 계정 발견: @${handle} (총 ${twitterUrls.length}개 후보)`);
+          finalProject.detected_twitter_url = firstUrl;
+          twitterDataSource = `AI 검색 결과에서 ${twitterUrls.length}개 계정 추출`;
         }
       }
     } catch (twitterError) {

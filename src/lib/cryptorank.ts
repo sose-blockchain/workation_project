@@ -64,6 +64,11 @@ class CryptoRankAPI {
     try {
       const searchResults = await this.searchProjects(projectName);
       
+      console.log(`🔍 CryptoRank 검색 결과 (${projectName}):`, {
+        totalResults: searchResults.data?.length || 0,
+        firstFew: searchResults.data?.slice(0, 3).map(p => ({ name: p.name, symbol: p.symbol })) || []
+      });
+      
       if (!searchResults.data || searchResults.data.length === 0) {
         console.log(`CryptoRank: 프로젝트 '${projectName}'을 찾을 수 없습니다.`);
         return null;

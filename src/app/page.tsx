@@ -107,9 +107,45 @@ export default function HomePage() {
       // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
       // CryptoRank Pro 구독 시 투자 라운드 데이터 저장 예정
 
-      // 2. 트위터 정보가 발견된 경우 자동으로 수집
+      // 2. 트위터 정보가 발견된 경우 자동으로 수집 (여러 후보 시도)
       let twitterMessage = '';
-      if (enhancedResult.project.detected_twitter_url) {
+      if (enhancedResult.project.detected_twitter_urls && enhancedResult.project.detected_twitter_urls.length > 0) {
+        console.log(`🔍 트위터 계정 후보 ${enhancedResult.project.detected_twitter_urls.length}개 발견`);
+        
+        let successfulAccount = null;
+        
+        for (const twitterUrl of enhancedResult.project.detected_twitter_urls) {
+          try {
+            const handle = TwitterService.extractTwitterHandle(twitterUrl);
+            if (!handle) continue;
+            
+            console.log(`🐦 트위터 계정 시도: @${handle}`);
+            const twitterResult = await twitterService.createOrUpdateTwitterAccount({
+              project_id: newProject.id,
+              screen_name: handle,
+              fetch_timeline: true
+            });
+            
+            if (twitterResult.found && twitterResult.account) {
+              successfulAccount = { handle, account: twitterResult.account };
+              twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
+              console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
+              break; // 성공하면 루프 종료
+            } else {
+              console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
+              // 계속해서 다음 후보 시도
+            }
+          } catch (err) {
+            console.error(`❌ 트위터 계정 @${TwitterService.extractTwitterHandle(twitterUrl)} 처리 중 오류:`, err);
+            // 계속해서 다음 후보 시도
+          }
+        }
+        
+        if (!successfulAccount) {
+          console.log(`📭 모든 트위터 계정 후보에서 수집 실패`);
+        }
+      } else if (enhancedResult.project.detected_twitter_url) {
+        // 기존 단일 URL 처리 (하위 호환성)
         try {
           const handle = TwitterService.extractTwitterHandle(enhancedResult.project.detected_twitter_url);
           if (handle) {

@@ -51,8 +51,21 @@ class TwitterAPI {
         throw new Error(`Twitter API request failed: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data;
+      // JSON 파싱을 안전하게 처리
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        console.warn('⚠️ Twitter API 응답이 비어있습니다.');
+        return { hasData: false, error: 'Empty response' };
+      }
+
+      try {
+        const data = JSON.parse(text);
+        return data;
+      } catch (parseError) {
+        console.error('❌ Twitter API JSON 파싱 오류:', parseError);
+        console.log('📄 응답 내용:', text.substring(0, 200) + '...');
+        return { hasData: false, error: 'Invalid JSON response' };
+      }
     } catch (error) {
       console.error('Twitter API Error:', error);
       throw error;
@@ -92,6 +105,12 @@ class TwitterAPI {
       
       if (!data || data.error || data.errors) {
         console.log(`❌ Twitter: 사용자 '${screenname}'을 찾을 수 없습니다.`, data?.error || data?.errors);
+        return null;
+      }
+
+      // 계정 정지 상태 확인
+      if (data.status === 'suspended') {
+        console.log(`⚠️ Twitter: 계정 '${screenname}'이 정지되었습니다.`);
         return null;
       }
 
@@ -185,8 +204,9 @@ class TwitterAPI {
         firstItem: Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : null
       });
       
-      if (!data) {
-        console.log(`❌ Twitter: '${screenname}'의 타임라인을 가져올 수 없습니다.`);
+      // API 오류 또는 빈 응답 처리
+      if (!data || data.error || data.hasData === false) {
+        console.log(`❌ Twitter: '${screenname}'의 타임라인을 가져올 수 없습니다.`, data?.error);
         return [];
       }
 

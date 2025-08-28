@@ -13,7 +13,8 @@ export interface Project {
   github_url?: string;
   project_twitter_url?: string;
   team_twitter_urls?: string[];
-  detected_twitter_url?: string; // AI 검색에서 발견된 트위터 URL
+  detected_twitter_url?: string; // AI 검색에서 발견된 트위터 URL (첫 번째)
+  detected_twitter_urls?: string[]; // AI 검색에서 발견된 모든 트위터 URL들
   ai_summary?: string;
   ai_keywords?: string[];
   // 마켓 데이터
@@ -41,7 +42,8 @@ export interface CreateProjectRequest {
   github_url?: string;
   project_twitter_url?: string;
   team_twitter_urls?: string[];
-  detected_twitter_url?: string; // AI 검색에서 발견된 트위터 URL
+  detected_twitter_url?: string; // AI 검색에서 발견된 트위터 URL (첫 번째)
+  detected_twitter_urls?: string[]; // AI 검색에서 발견된 모든 트위터 URL들
   // 마켓 데이터
   market_cap_rank?: number;
   current_price_usd?: number;
