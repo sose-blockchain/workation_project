@@ -8,7 +8,7 @@ import ProjectSidebar from '@/components/ProjectSidebar'
 import SearchImprovements from '@/components/SearchImprovements'
 import { Project, CreateProjectRequest, UpdateProjectRequest } from '@/types/project'
 import { supabase } from '@/lib/supabase'
-import { searchProjectInfo } from '@/lib/gemini'
+import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
 
 export default function ResearchPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -53,13 +53,13 @@ export default function ResearchPage() {
     setMessage('')
     
     try {
-      // AI로 프로젝트 정보 검색
-      const aiResult = await searchProjectInfo(projectName)
+      // AI와 CryptoRank API로 향상된 프로젝트 정보 검색
+      const enhancedResult = await getEnhancedProjectInfo(projectName)
       
       // 1. projects 테이블에 기본 정보 저장
       const { data: newProject, error: projectError } = await supabase
         .from('projects')
-        .insert([aiResult.project])
+        .insert([enhancedResult.project])
         .select()
         .single()
 
@@ -70,11 +70,11 @@ export default function ResearchPage() {
 
 
       // 2. investments 테이블에 투자 데이터 저장 (있는 경우)
-      if (aiResult.investment_rounds && Array.isArray(aiResult.investment_rounds) && newProject) {
-        const investmentData = aiResult.investment_rounds.map(round => ({
+      if (enhancedResult.investment_rounds && Array.isArray(enhancedResult.investment_rounds) && newProject) {
+        const investmentData = enhancedResult.investment_rounds.map(round => ({
           project_id: newProject.id,
           ...round,
-          data_source: round.data_source || 'AI 분석'
+          data_source: round.data_source || enhancedResult.data_sources.investment_data
         }))
         
         const { error: investmentError } = await supabase
@@ -86,7 +86,11 @@ export default function ResearchPage() {
         }
       }
 
-      setMessage('프로젝트가 성공적으로 저장되었습니다!')
+      const successMessage = enhancedResult.data_sources.investment_data === 'cryptorank.io' 
+        ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API에서 실시간 투자 데이터 수집)'
+        : '프로젝트가 성공적으로 저장되었습니다!';
+      
+      setMessage(successMessage)
       setProjects(prev => [newProject, ...prev])
       
       // 3초 후 메시지 제거
@@ -183,8 +187,8 @@ export default function ResearchPage() {
       {/* 메인 컨텐츠 */}
       <div className="min-h-screen flex flex-col">
         {/* 상단 헤더 */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold text-gray-900">프로젝트 리서치</h1>
+        <div className="flex justify-between items-center p-4">
+          <h1 className="text-xl font-semibold text-gray-900">DeSpread</h1>
           <Link 
             href="/"
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
