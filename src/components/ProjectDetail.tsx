@@ -25,10 +25,14 @@ export default function ProjectDetail({
     name: project.name,
     token_symbol: project.token_symbol || '',
     description: project.description || '',
+    keyword1: project.keyword1 || '',
+    keyword2: project.keyword2 || '',
+    keyword3: project.keyword3 || '',
     homepage_url: project.homepage_url || '',
     whitepaper_url: project.whitepaper_url || '',
     docs_url: project.docs_url || '',
     blog_url: project.blog_url || '',
+    github_url: project.github_url || '',
     project_twitter_url: project.project_twitter_url || '',
     team_twitter_urls: project.team_twitter_urls || []
   })
@@ -43,6 +47,7 @@ export default function ProjectDetail({
         whitepaper_url: project.whitepaper_url || undefined,
         docs_url: project.docs_url || undefined,
         blog_url: project.blog_url || undefined,
+        github_url: project.github_url || undefined,
         project_twitter_url: project.project_twitter_url || undefined,
         team_twitter_urls: project.team_twitter_urls || undefined
       })
@@ -83,6 +88,8 @@ export default function ProjectDetail({
       team_twitter_urls: newTeamTwitterUrls
     }))
   }
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -245,6 +252,48 @@ export default function ProjectDetail({
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    주요 키워드 1
+                  </label>
+                  <input
+                    type="text"
+                    name="keyword1"
+                    value={formData.keyword1}
+                    onChange={handleChange}
+                    placeholder="예: Layer1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    주요 키워드 2
+                  </label>
+                  <input
+                    type="text"
+                    name="keyword2"
+                    value={formData.keyword2}
+                    onChange={handleChange}
+                    placeholder="예: DeFi"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    주요 키워드 3
+                  </label>
+                  <input
+                    type="text"
+                    name="keyword3"
+                    value={formData.keyword3}
+                    onChange={handleChange}
+                    placeholder="예: NFT"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -297,6 +346,19 @@ export default function ProjectDetail({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  GitHub URL
+                </label>
+                <input
+                  type="url"
+                  name="github_url"
+                  value={formData.github_url}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
               <div>
@@ -382,6 +444,29 @@ export default function ProjectDetail({
                 </div>
               )}
 
+              {(project.keyword1 || project.keyword2 || project.keyword3) && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">주요 키워드</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {project.keyword1 && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {project.keyword1}
+                      </span>
+                    )}
+                    {project.keyword2 && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {project.keyword2}
+                      </span>
+                    )}
+                    {project.keyword3 && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {project.keyword3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {project.homepage_url && (
                   <div>
@@ -419,6 +504,15 @@ export default function ProjectDetail({
                   </div>
                 )}
               </div>
+
+              {project.github_url && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">GitHub</h3>
+                  <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {project.github_url}
+                  </a>
+                </div>
+              )}
 
               {project.project_twitter_url && (
                 <div>

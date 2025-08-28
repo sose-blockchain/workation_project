@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Project } from '@/types/project'
+import SearchImprovements from './SearchImprovements'
 
 interface ProjectSidebarProps {
   projects: Project[]
@@ -15,26 +16,28 @@ export default function ProjectSidebar({
   selectedProject 
 }: ProjectSidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
-  // 프로젝트를 카테고리별로 그룹화
-  const groupedProjects = {
-    reports: [
-      { name: 'Monthly Report', projects: projects.slice(0, 2) },
-      { name: 'Community & Blog', projects: projects.slice(2, 4) },
-      { name: 'Community PR', projects: projects.slice(4, 6) },
-      { name: 'SEO', projects: projects.slice(6, 8) },
-      { name: 'Media PR', projects: projects.slice(8, 10) }
-    ],
-    data: [
-      { name: 'Korean Community Data', projects: projects.slice(10, 12) },
-      { name: 'Korean Mindshare', projects: projects.slice(12, 14) },
-      { name: 'Korean Mindshare Pre TGE', projects: projects.slice(14, 16) },
-      { name: 'Narrative Mindshare', projects: projects.slice(16, 18) },
-      { name: 'Mitosis Storyteller', projects: projects.slice(18, 20) },
-      { name: 'Abstract Storyteller', projects: projects.slice(20, 22) },
-      { name: 'Solana Storyteller', projects: projects.slice(22, 24) }
-    ]
-  }
+  // 검색 필터링
+  const filteredProjects = projects.filter(project => 
+    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (project.token_symbol && project.token_symbol.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (project.keyword1 && project.keyword1.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (project.keyword2 && project.keyword2.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (project.keyword3 && project.keyword3.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  // 개선 필요한 프로젝트 계산
+  const projectsNeedingImprovement = projects.filter(project => {
+    const urlCount = [
+      project.homepage_url,
+      project.github_url,
+      project.docs_url,
+      project.project_twitter_url
+    ].filter(Boolean).length
+    return urlCount < 2 // URL이 2개 미만인 프로젝트
+  })
 
   return (
     <>
@@ -59,7 +62,7 @@ export default function ProjectSidebar({
       )}
 
       {/* 사이드바 */}
-      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+      <div className={`fixed top-0 left-0 h-full w-96 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="p-6 border-b border-gray-200">
@@ -70,7 +73,7 @@ export default function ProjectSidebar({
                   <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
                 </svg>
               </div>
-              <span className="ml-3 font-medium text-gray-900">Projects</span>
+              <span className="ml-3 font-medium text-gray-900">프로젝트 관리</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -89,8 +92,10 @@ export default function ProjectSidebar({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search project"
-                className="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="프로젝트 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -98,82 +103,61 @@ export default function ProjectSidebar({
             </div>
           </div>
 
-          {/* 프로젝트 목록 */}
+          {/* 콘텐츠 */}
           <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-            {/* Reports 섹션 */}
-            <div>
-              <div className="flex items-center mb-3">
-                <svg className="w-4 h-4 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-                </svg>
-                <h3 className="text-sm font-medium text-gray-900">Reports</h3>
+            {/* 검색 품질 분석 */}
+            {projects.length > 0 && (
+              <div>
+                <SearchImprovements projects={projects} />
               </div>
-              <div className="space-y-1 ml-6">
-                {groupedProjects.reports.map((category, index) => (
-                  <div key={index}>
-                    <div className="text-xs text-gray-500 py-1">{category.name}</div>
-                    {category.projects.map((project) => (
-                      <button
-                        key={project.id}
-                        onClick={() => {
-                          onProjectSelect(project)
-                          setIsOpen(false)
-                        }}
-                        className={`w-full text-left px-2 py-1 text-xs rounded hover:bg-gray-100 ${
-                          selectedProject?.id === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'
-                        }`}
-                      >
-                        {project.name}
-                      </button>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
-            {/* Korean Community Data 섹션 */}
-            <div>
-              <div className="flex items-center mb-3">
-                <svg className="w-4 h-4 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9,2V8H11V11H5V9H7V2H9M13,2V5H15V9H21V11H15V8H13V2H13M15,13V16H17V23H15V20H13V18H19V20H17V16H15V13H15M3,13V18H5V23H3V20H1V18H7V16H5V13H3Z"/>
-                </svg>
-                <h3 className="text-sm font-medium text-blue-600">Korean Community Data</h3>
+            {/* 개선 필요 프로젝트 */}
+            {projectsNeedingImprovement.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-orange-600 mb-3 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  개선 필요 프로젝트 ({projectsNeedingImprovement.length})
+                </h3>
+                <div className="space-y-1">
+                  {projectsNeedingImprovement.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => {
+                        onProjectSelect(project)
+                        setIsOpen(false)
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded border-l-4 border-orange-400 bg-orange-50 hover:bg-orange-100 ${
+                        selectedProject?.id === project.id ? 'bg-orange-100 text-orange-800' : 'text-orange-700'
+                      }`}
+                    >
+                      <div className="font-medium">{project.name}</div>
+                      <div className="text-xs text-orange-600">URL 정보 부족</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-1 ml-6">
-                {groupedProjects.data.map((category, index) => (
-                  <div key={index}>
-                    <div className="text-xs text-gray-500 py-1">{category.name}</div>
-                    {category.projects.map((project) => (
-                      <button
-                        key={project.id}
-                        onClick={() => {
-                          onProjectSelect(project)
-                          setIsOpen(false)
-                        }}
-                        className={`w-full text-left px-2 py-1 text-xs rounded hover:bg-gray-100 ${
-                          selectedProject?.id === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'
-                        }`}
-                      >
-                        {project.name}
-                      </button>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* 모든 프로젝트 목록 */}
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-2">All Projects</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                전체 프로젝트 ({filteredProjects.length})
+              </h3>
               <div className="space-y-1">
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                   <button
                     key={project.id}
                     onClick={() => {
                       onProjectSelect(project)
                       setIsOpen(false)
                     }}
-                    className={`w-full text-left px-2 py-2 text-sm rounded hover:bg-gray-100 ${
+                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 ${
                       selectedProject?.id === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
                     }`}
                   >
@@ -181,9 +165,39 @@ export default function ProjectSidebar({
                     {project.token_symbol && (
                       <div className="text-xs text-gray-500">{project.token_symbol}</div>
                     )}
+                    {(project.keyword1 || project.keyword2 || project.keyword3) && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {project.keyword1 && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                            {project.keyword1}
+                          </span>
+                        )}
+                        {project.keyword2 && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                            {project.keyword2}
+                          </span>
+                        )}
+                        {project.keyword3 && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                            {project.keyword3}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
+              
+              {/* 검색 결과 없음 */}
+              {searchTerm && filteredProjects.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p>검색 결과가 없습니다</p>
+                  <p className="text-xs mt-1">다른 키워드로 검색해보세요</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

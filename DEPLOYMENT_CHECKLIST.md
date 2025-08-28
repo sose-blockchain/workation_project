@@ -24,15 +24,16 @@
 
 ### 1. GitHub Repository 설정
 ```bash
-# Git 저장소 초기화 (아직 안 했다면)
-git init
-git add .
-git commit -m "feat: Initial commit with Google-style UI and advanced search features"
+# ✅ Git 저장소 초기화 완료
+# ✅ 모든 파일 커밋 완료
 
-# GitHub 저장소 연결
-git remote add origin https://github.com/your-username/workation-project.git
-git branch -M main
-git push -u origin main
+# GitHub 저장소에 푸시 (origin이 이미 설정되어 있음)
+git push origin main
+
+# 또는 처음 설정하는 경우:
+# git remote add origin https://github.com/your-username/workation-project.git
+# git branch -M main  
+# git push -u origin main
 ```
 
 ### 2. Vercel GitHub 연동

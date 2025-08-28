@@ -179,27 +179,21 @@ export default function ResearchPage() {
           
           {/* 최근 프로젝트 표시 (검색어가 없을 때만) */}
           {projects.length > 0 && (
-            <div className="mt-8 w-full max-w-4xl space-y-6">
-              {/* 검색 개선 제안 */}
-              <SearchImprovements projects={projects} />
-              
-              {/* 최근 프로젝트 */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">최근 프로젝트</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {projects.slice(0, 4).map((project) => (
-                    <button
-                      key={project.id}
-                      onClick={() => setSelectedProject(project)}
-                      className="text-left p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200"
-                    >
-                      <div className="font-medium text-gray-900 text-sm">{project.name}</div>
-                      {project.token_symbol && (
-                        <div className="text-xs text-gray-500 mt-1">{project.token_symbol}</div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+            <div className="mt-8 w-full max-w-2xl">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">최근 프로젝트</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {projects.slice(0, 4).map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => setSelectedProject(project)}
+                    className="text-left p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200"
+                  >
+                    <div className="font-medium text-gray-900 text-sm">{project.name}</div>
+                    {project.token_symbol && (
+                      <div className="text-xs text-gray-500 mt-1">{project.token_symbol}</div>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           )}

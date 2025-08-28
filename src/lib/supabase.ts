@@ -36,10 +36,14 @@ export type Database = {
           name: string
           token_symbol: string | null
           description: string | null
+          keyword1: string | null
+          keyword2: string | null
+          keyword3: string | null
           homepage_url: string | null
           whitepaper_url: string | null
           docs_url: string | null
           blog_url: string | null
+          github_url: string | null
           project_twitter_url: string | null
           team_twitter_urls: string[] | null
           ai_summary: string | null
@@ -53,10 +57,14 @@ export type Database = {
           name: string
           token_symbol?: string | null
           description?: string | null
+          keyword1?: string | null
+          keyword2?: string | null
+          keyword3?: string | null
           homepage_url?: string | null
           whitepaper_url?: string | null
           docs_url?: string | null
           blog_url?: string | null
+          github_url?: string | null
           project_twitter_url?: string | null
           team_twitter_urls?: string[] | null
           ai_summary?: string | null
@@ -70,10 +78,14 @@ export type Database = {
           name?: string
           token_symbol?: string | null
           description?: string | null
+          keyword1?: string | null
+          keyword2?: string | null
+          keyword3?: string | null
           homepage_url?: string | null
           whitepaper_url?: string | null
           docs_url?: string | null
           blog_url?: string | null
+          github_url?: string | null
           project_twitter_url?: string | null
           team_twitter_urls?: string[] | null
           ai_summary?: string | null

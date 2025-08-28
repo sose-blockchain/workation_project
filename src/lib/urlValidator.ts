@@ -134,6 +134,7 @@ export async function validateProjectUrls(urls: {
   whitepaper_url?: string
   docs_url?: string
   blog_url?: string
+  github_url?: string
   project_twitter_url?: string
   team_twitter_urls?: string[]
 }): Promise<{
@@ -197,6 +198,7 @@ export async function validateProjectUrls(urls: {
     validateUrl(urls.whitepaper_url, 'Whitepaper'),
     validateUrl(urls.docs_url, 'Documentation'),
     validateUrl(urls.blog_url, 'Blog'),
+    validateUrl(urls.github_url, 'GitHub'),
     validateUrl(urls.project_twitter_url, 'Project Twitter'),
     ...(urls.team_twitter_urls || []).map((url, index) => 
       validateUrl(url, `Team Twitter ${index + 1}`)
@@ -204,9 +206,9 @@ export async function validateProjectUrls(urls: {
   ])
 
   // 결과 분류
-  const urlTypes = ['homepage_url', 'whitepaper_url', 'docs_url', 'blog_url', 'project_twitter_url']
+  const urlTypes = ['homepage_url', 'whitepaper_url', 'docs_url', 'blog_url', 'github_url', 'project_twitter_url']
   
-  results.slice(0, 5).forEach((result, index) => {
+  results.slice(0, 6).forEach((result, index) => {
     const key = urlTypes[index] as keyof typeof urls
     if (result.category === 'valid') {
       valid[key] = result.url as any
@@ -219,7 +221,7 @@ export async function validateProjectUrls(urls: {
 
   // 팀 트위터 URL 처리
   if (urls.team_twitter_urls) {
-    const teamResults = results.slice(5)
+    const teamResults = results.slice(6)
     valid.team_twitter_urls = []
     deprecated.team_twitter_urls = []
     inaccessible.team_twitter_urls = []

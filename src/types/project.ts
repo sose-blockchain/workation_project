@@ -3,10 +3,14 @@ export interface Project {
   name: string;
   token_symbol?: string;
   description?: string;
+  keyword1?: string;
+  keyword2?: string;
+  keyword3?: string;
   homepage_url?: string;
   whitepaper_url?: string;
   docs_url?: string;
   blog_url?: string;
+  github_url?: string;
   project_twitter_url?: string;
   team_twitter_urls?: string[];
   ai_summary?: string;
@@ -20,10 +24,14 @@ export interface CreateProjectRequest {
   name: string;
   token_symbol?: string;
   description?: string;
+  keyword1?: string;
+  keyword2?: string;
+  keyword3?: string;
   homepage_url?: string;
   whitepaper_url?: string;
   docs_url?: string;
   blog_url?: string;
+  github_url?: string;
   project_twitter_url?: string;
   team_twitter_urls?: string[];
 }

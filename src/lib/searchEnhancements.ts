@@ -10,6 +10,7 @@ export function calculateUrlQualityScore(urls: {
   whitepaper_url?: string
   docs_url?: string
   blog_url?: string
+  github_url?: string
   project_twitter_url?: string
   team_twitter_urls?: string[]
 }): {
@@ -40,10 +41,11 @@ export function calculateUrlQualityScore(urls: {
   }
 
   // 문서 점수 (30점)
-  if (urls.docs_url) docScore += 15
-  if (urls.whitepaper_url) docScore += 15
-  if (!urls.docs_url && !urls.whitepaper_url) {
-    suggestions.push('프로젝트 문서 또는 백서 URL 추가 권장')
+  if (urls.docs_url) docScore += 10
+  if (urls.whitepaper_url) docScore += 10
+  if (urls.github_url) docScore += 10
+  if (!urls.docs_url && !urls.whitepaper_url && !urls.github_url) {
+    suggestions.push('프로젝트 문서, 백서 또는 GitHub URL 추가 권장')
   }
 
   // 소셜 미디어 점수 (25점)
@@ -61,6 +63,7 @@ export function calculateUrlQualityScore(urls: {
     urls.homepage_url,
     urls.docs_url,
     urls.blog_url,
+    urls.github_url,
     urls.project_twitter_url,
     ...(urls.team_twitter_urls || [])
   ].filter(Boolean) as string[]
