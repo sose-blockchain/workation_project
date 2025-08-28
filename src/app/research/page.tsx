@@ -69,22 +69,8 @@ export default function ResearchPage() {
 
 
 
-      // 2. investments 테이블에 투자 데이터 저장 (있는 경우)
-      if (enhancedResult.investment_rounds && Array.isArray(enhancedResult.investment_rounds) && newProject) {
-        const investmentData = enhancedResult.investment_rounds.map(round => ({
-          project_id: newProject.id,
-          ...round,
-          data_source: round.data_source || enhancedResult.data_sources.investment_data
-        }))
-        
-        const { error: investmentError } = await supabase
-          .from('investments')
-          .insert(investmentData)
-
-        if (investmentError) {
-          console.warn('투자 데이터 저장 실패:', investmentError)
-        }
-      }
+      // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
+      // CryptoRank Pro 구독 시 투자 라운드 데이터 저장 예정
 
       const successMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
         ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API로 정확한 프로젝트명/심볼 확인)'

@@ -23,7 +23,7 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       console.warn('CryptoRank API 호출 실패:', cryptoRankError);
     }
 
-    // 2. Gemini AI로 전체 프로젝트 정보 수집 (투자 라운드 포함)
+    // 2. Gemini AI로 기본 프로젝트 정보 수집 (투자 라운드 제외)
     const aiResult = await searchProjectInfo(projectName);
     console.log('Gemini AI result received');
 
@@ -44,10 +44,10 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
 
     const result: EnhancedProjectResult = {
       project: finalProject,
-      investment_rounds: aiResult.investment_rounds, // 투자 라운드는 항상 AI에서
+      investment_rounds: null, // 투자 라운드 데이터 수집 비활성화
       data_sources: {
         basic_info: basicInfoSource,
-        investment_data: 'AI 분석' // 투자 데이터는 항상 AI 분석
+        investment_data: '프리미엄 서비스 예정' // 투자 데이터는 프리미엄 서비스
       }
     };
 
@@ -61,10 +61,10 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
     const aiResult = await searchProjectInfo(projectName);
     return {
       project: aiResult.project,
-      investment_rounds: aiResult.investment_rounds,
+      investment_rounds: null, // 투자 라운드 데이터 수집 비활성화
       data_sources: {
         basic_info: 'Gemini AI',
-        investment_data: 'AI 분석'
+        investment_data: '프리미엄 서비스 예정'
       }
     };
   }
