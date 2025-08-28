@@ -175,20 +175,20 @@ npm run build
 
 ```env
 # Supabase (필수)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
-# Gemini AI (필수)
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+# Gemini AI (필수) - 2.5-flash 모델 사용
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
 
-# Twitter API (선택 - SNS 기능용)
-TWITTER_BEARER_TOKEN=your_twitter_bearer_token
-TWITTER_API_KEY=your_twitter_api_key
-TWITTER_API_SECRET=your_twitter_api_secret
+# Twitter API (RapidAPI 기반 - SNS 기능용)
+NEXT_PUBLIC_TWITTER_API_KEY=your_twitter_api_key_here
+NEXT_PUBLIC_TWITTER_API_HOST=twitter-api45.p.rapidapi.com
 
-# Notion API (선택 - 문서 생성용)
-NOTION_API_KEY=your_notion_api_key
-NOTION_DATABASE_ID=your_notion_database_id
+# CryptoRank API (시장 데이터용)
+NEXT_PUBLIC_CRYPTORANK_API_KEY=your_cryptorank_api_key_here
+# 대체 키 (서버사이드용)
+CRYPTORANK_API_KEY=your_cryptorank_api_key_here
 
 # 개발 환경
 NODE_ENV=development
@@ -201,9 +201,19 @@ NODE_ENV=development
 2. 새 프로젝트 생성
 3. Settings > API에서 URL과 anon key 복사
 
-#### Gemini API 설정
+#### Gemini AI 설정
 1. [Google AI Studio](https://makersuite.google.com/app/apikey) 접속
-2. API 키 생성
+2. API 키 생성 (gemini-2.5-flash 모델 지원 확인)
+3. 생성된 키를 환경 변수에 설정
+
+#### Twitter API (RapidAPI) 설정
+1. [RapidAPI](https://rapidapi.com) 계정 생성
+2. "Twitter API v1.1" 구독
+3. API 키 복사하여 환경 변수에 설정
+
+#### CryptoRank API 설정
+1. [CryptoRank](https://cryptorank.io/api) 계정 생성
+2. API 키 발급 (limit 파라미터 100, 500, 1000 지원)
 3. 생성된 키를 환경 변수에 설정
 
 ## 📦 프로젝트 구조
