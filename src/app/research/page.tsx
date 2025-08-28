@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import ProjectSearch from '@/components/ProjectSearch'
 import ProjectDetail from '@/components/ProjectDetail'
 import ProjectSidebar from '@/components/ProjectSidebar'
@@ -73,7 +74,7 @@ export default function ResearchPage() {
         const investmentData = aiResult.investment_rounds.map(round => ({
           project_id: newProject.id,
           ...round,
-          data_source: round.data_source || 'gemini_ai'
+          data_source: round.data_source || 'AI 분석'
         }))
         
         const { error: investmentError } = await supabase
@@ -184,7 +185,7 @@ export default function ResearchPage() {
         {/* 상단 헤더 */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h1 className="text-xl font-semibold text-gray-900">프로젝트 리서치</h1>
-          <a 
+          <Link 
             href="/"
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
           >
@@ -192,7 +193,7 @@ export default function ResearchPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             홈으로
-          </a>
+          </Link>
         </div>
 
         {/* 메시지 표시 */}
@@ -237,9 +238,9 @@ export default function ResearchPage() {
         </div>
 
         {/* 하단 링크 */}
-        <div className="py-6 bg-gray-50 border-t">
+        <div className="py-3 bg-gray-50 border-t">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="flex flex-wrap justify-center gap-4 text-xs">
               <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
               <a href="#" className="text-gray-600 hover:text-gray-900">Privacy</a>
               <a href="#" className="text-gray-600 hover:text-gray-900">Terms</a>

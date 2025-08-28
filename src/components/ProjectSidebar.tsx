@@ -35,7 +35,7 @@ export default function ProjectSidebar({
       {/* 토글 버튼 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 ${
+        className={`fixed top-20 left-4 z-50 p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 ${
           isOpen ? 'transform rotate-180' : ''
         }`}
       >

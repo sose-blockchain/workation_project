@@ -200,7 +200,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
         <h3 className="text-lg font-semibold text-gray-900">투자 정보</h3>
         <button
           onClick={() => setShowForm(true)}
-          className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50"
+          className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 hover:bg-gray-50"
         >
           투자 추가
         </button>
@@ -266,7 +266,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
                 <div className="flex space-x-2">
                   <button
                     onClick={() => startEdit(investment)}
-                    className="px-2 py-1 text-xs border border-gray-300 hover:bg-gray-50"
+                    className="px-2 py-1 text-xs text-gray-700 border border-gray-300 hover:bg-gray-50"
                   >
                     수정
                   </button>
@@ -404,7 +404,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
               ))}
               <button
                 onClick={addInvestor}
-                className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50"
+                className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 hover:bg-gray-50"
               >
                 투자자 추가
               </button>
@@ -443,7 +443,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
             </button>
             <button
               onClick={resetForm}
-              className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 hover:bg-gray-50"
             >
               취소
             </button>

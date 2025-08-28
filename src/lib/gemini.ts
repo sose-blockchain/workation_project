@@ -39,7 +39,7 @@ export async function searchProjectInfo(projectName: string) {
 다음 형식으로 응답해주세요 (다른 텍스트 없이 JSON만):
 {
   "name": "프로젝트명을 영문 소문자로 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 이름)",
-  "token_symbol": "토큰 심볼 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 심볼)",
+  "token_symbol": "토큰 심볼 (coinmarketcap, coingecko, cryptorank에서 확인된 정확한 심볼. 실제로 거래소에 상장된 토큰만 입력. 상장되지 않았거나 토큰이 없으면 null)",
   "description": "프로젝트에 대한 한글 설명 (2-3문장으로 자세히)",
   "keyword1": "Layer1, Layer2, DApp 중 정확히 하나만 선택 (프로젝트의 기본 분류)",
   "keyword2": "keyword1과 다른 세부 영역 (예: DeFi, GameFi, Infrastructure, NFT, Bridge, DEX 등)",
@@ -90,6 +90,7 @@ export async function searchProjectInfo(projectName: string) {
 
 주의사항:
 - name과 token_symbol은 반드시 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
+- token_symbol은 실제로 거래소에서 거래되는 토큰만 입력 (Pre-TGE나 미상장 토큰은 null로 설정)
 - keyword1은 반드시 Layer1, Layer2, DApp 중 정확히 하나만 선택
 - keyword2는 keyword1과 중복되지 않는 구체적인 영역 (DeFi, GameFi, NFT 등)
 - keyword3는 keyword1, keyword2와 완전히 다른 고유한 기술적 특징
