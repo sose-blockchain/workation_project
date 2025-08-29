@@ -98,20 +98,28 @@ class CryptoRankAPI {
       }
       
       if (!project) {
-        // 4. 이름에 쿼리가 포함된 것 찾기 (단, Bitcoin, Ethereum 등 제외)
-        const excludedProjects = ['bitcoin', 'ethereum', 'tether', 'binance coin', 'cardano'];
-        project = searchResults.data.find(p => 
-          p.name.toLowerCase().includes(query) && 
-          !excludedProjects.includes(p.name.toLowerCase())
+        // 4. 이름에 쿼리가 포함된 것 찾기 (유사도 검증)
+        const candidates = searchResults.data.filter(p => 
+          p.name.toLowerCase().includes(query)
         );
+        
+        // 포함된 후보들 중에서 가장 유사한 것 선택
+        if (candidates.length > 0) {
+          project = candidates.reduce((best, current) => {
+            const bestSim = this.calculateSimilarity(query, best.name.toLowerCase());
+            const currentSim = this.calculateSimilarity(query, current.name.toLowerCase());
+            return currentSim > bestSim ? current : best;
+          });
+        }
       }
       
-      // 5. 마지막 수단으로 첫 번째 결과 사용 (단, 명백히 다른 프로젝트는 제외)
+      // 5. 마지막 수단으로 첫 번째 결과 사용 (유사도 검증)
       if (!project) {
         const firstResult = searchResults.data[0];
         const similarity = this.calculateSimilarity(query, firstResult.name.toLowerCase());
         
-        if (similarity < 0.3) { // 유사도가 30% 미만이면 무시
+        // 유사도가 30% 미만이면 무시
+        if (similarity < 0.3) {
           console.log(`❌ CryptoRank: '${projectName}' 검색 결과가 부정확함 (${firstResult.name}, 유사도: ${Math.round(similarity * 100)}%)`);
           return null;
         }

@@ -34,78 +34,50 @@ export async function searchProjectInfo(projectName: string) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const prompt = `
-다음 블록체인 프로젝트에 대한 정보를 정확한 JSON 형태로만 제공해주세요: "${projectName}"
+블록체인 프로젝트 "${projectName}"에 대한 정보를 정확히 수집해서 JSON으로 응답해주세요.
 
-⚠️ 중요: 반드시 "${projectName}" 프로젝트에 대해서만 정보를 제공하세요. 다른 프로젝트(Bitcoin, Ethereum 등)의 정보를 제공하지 마세요.
+🚨 핵심 규칙:
+1. "${projectName}" 프로젝트에 대해서만 정보 제공 (다른 프로젝트 절대 금지)
+2. 모르는 정보는 null로 설정
+3. JSON 형식만 응답 (다른 텍스트 없이)
 
-다음 형식으로 응답해주세요 (다른 텍스트 없이 JSON만):
+응답 형식:
 {
-  "name": "검색한 프로젝트명과 정확히 일치하는 영문 이름 (${projectName}와 관련된 프로젝트만)",
-  "token_symbol": "해당 프로젝트의 정확한 토큰 심볼 (${projectName} 프로젝트 전용 심볼. 다른 프로젝트 심볼 사용 금지)",
-  "description": "프로젝트에 대한 한글 설명 (2-3문장으로 자세히)",
-  "keyword1": "Layer1, Layer2, DApp 중 정확히 하나만 선택 (프로젝트의 기본 분류)",
-  "keyword2": "keyword1과 다른 세부 영역 (예: DeFi, GameFi, Infrastructure, NFT, Bridge, DEX 등)",
-  "keyword3": "keyword1, keyword2와 중복되지 않는 고유 기술 특징 (예: Zero-Knowledge, Cross-Chain, AI-Powered 등)",
+  "name": "${projectName}",
+  "token_symbol": "토큰 심볼 (${projectName} 전용, 미상장이면 null)",
+  "description": "프로젝트 설명 (한글 2-3문장)",
+  "keyword1": "Layer1 또는 Layer2 또는 DApp 중 하나",
+  "keyword2": "세부 영역 (DeFi, GameFi, Infrastructure, NFT, Bridge 등)",
+  "keyword3": "고유 특징 (Zero-Knowledge, Cross-Chain, Proof-of-Stake 등)",
   "homepage_url": "공식 홈페이지 URL",
   "whitepaper_url": "백서 URL",
-  "docs_url": "문서 URL", 
+  "docs_url": "문서 URL",
   "blog_url": "블로그 URL",
-  "github_url": "GitHub 저장소 URL (공식 organization 또는 main repository)",
-  "project_twitter_url": "프로젝트 공식 트위터 URL (완전한 URL 형태: https://twitter.com/handle 또는 https://x.com/handle)",
-  "team_twitter_urls": ["현재 활동 중인 주요 팀원 트위터 URL 배열 (완전한 URL 형태로, 존재하지 않는 계정 제외)"],
-  "market_data": {
-    "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
-    "current_price_usd": "현재 가격 USD (숫자)",
-    "market_cap_usd": "시가총액 USD (숫자)",
-    "volume_24h_usd": "24시간 거래량 USD (숫자)",
-    "price_change_24h": "24시간 가격 변동률 % (숫자)",
-    "price_change_7d": "7일 가격 변동률 % (숫자)",
-    "price_change_30d": "30일 가격 변동률 % (숫자)",
-    "data_source": "데이터 소스 (coinmarketcap, coingecko, cryptorank 중 하나)"
-  },
-  "investment_rounds": [
-    {
-      "round_type": "투자 라운드 타입 (예: Seed, Series A, Private Sale, Strategic)",
-      "round_name": "라운드 이름 (예: Series A Round)",
-      "date": "투자 날짜 (YYYY-MM-DD 형식)",
-      "amount_usd": "투자 금액 USD (숫자)",
-      "valuation_pre_money_usd": "Pre-money 밸류에이션 USD (숫자)",
-      "valuation_post_money_usd": "Post-money 밸류에이션 USD (숫자)",
-      "lead_investor": "리드 투자자",
-      "investors": ["주요 투자자 리스트"],
-      "data_source": "실제 데이터 출처 (cryptorank.io, crunchbase.com, coindesk.com, cointelegraph.com 등 실제 웹사이트명)",
-      "source_url": "해당 투자 정보를 확인할 수 있는 실제 URL"
-    }
-  ],
-  "market_cap_rank": "시가총액 순위 (숫자, coinmarketcap 기준)",
-  "current_price_usd": "현재 가격 USD (숫자)",
-  "market_cap_usd": "시가총액 USD (숫자)",
-  "investment_rounds": [
-    {
-      "round_type": "투자 라운드 타입 (예: Seed, Series A, Private Sale)",
-      "date": "투자 날짜 (YYYY-MM-DD 형식)",
-      "amount_usd": "투자 금액 USD (숫자)",
-      "investors": ["주요 투자자 리스트"]
-    }
-  ]
+  "github_url": "GitHub URL",
+  "project_twitter_url": "공식 트위터 URL (https://twitter.com/... 또는 https://x.com/... 형태)",
+  "team_twitter_urls": ["팀원 트위터 URL 배열"],
+  "market_data": null
 }
 
-🚨 중요 주의사항:
-- 반드시 "${projectName}" 프로젝트에 대해서만 정보를 제공하세요
-- name은 "${projectName}"와 관련된 프로젝트명만 입력 (다른 프로젝트명 절대 금지)
-- token_symbol은 "${projectName}" 프로젝트의 토큰만 입력 (BTC, ETH 등 다른 토큰 심볼 사용 금지)
-- name과 token_symbol은 coinmarketcap, coingecko, cryptorank에서 확인된 정확한 정보
-- token_symbol은 실제로 거래소에서 거래되는 토큰만 입력 (Pre-TGE나 미상장 토큰은 null로 설정)
-- keyword1은 반드시 Layer1, Layer2, DApp 중 정확히 하나만 선택
-- keyword2는 keyword1과 중복되지 않는 구체적인 영역 (DeFi, GameFi, NFT 등)
-- keyword3는 keyword1, keyword2와 완전히 다른 고유한 기술적 특징
-- 각 키워드는 서로 중복되지 않아야 함
-- market_data는 최신 가격/시장 정보 (coinmarketcap, coingecko, cryptorank)
-- investment_rounds는 Cryptorank, Crunchbase, CoinDesk, CoinTelegraph 등에서 확인된 모든 투자 라운드
-- data_source는 반드시 실제 웹사이트명 (예: cryptorank.io, crunchbase.com)
-- source_url은 해당 투자 정보를 확인할 수 있는 실제 링크
-- 찾을 수 없는 정보는 null로 설정
-- 반드시 유효한 JSON 형태로만 응답
+실제 예시 - Berachain 검색:
+{
+  "name": "Berachain",
+  "token_symbol": "BERA",
+  "description": "Berachain은 Cosmos SDK와 Polaris EVM을 기반으로 하는 EVM 호환 Layer1 블록체인입니다. Proof-of-Liquidity 합의 메커니즘을 사용하여 유동성 공급자에게 인센티브를 제공합니다.",
+  "keyword1": "Layer1",
+  "keyword2": "DeFi",
+  "keyword3": "Proof-of-Liquidity",
+  "homepage_url": "https://berachain.com",
+  "whitepaper_url": "https://docs.berachain.com/whitepaper",
+  "docs_url": "https://docs.berachain.com",
+  "blog_url": "https://blog.berachain.com",
+  "github_url": "https://github.com/berachain",
+  "project_twitter_url": "https://twitter.com/berachain",
+  "team_twitter_urls": ["https://twitter.com/dev_bear", "https://twitter.com/0xhoneyjar"],
+  "market_data": null
+}
+
+이제 "${projectName}"에 대해 같은 형식으로 정확한 정보를 제공해주세요:
 `
 
   try {
@@ -178,15 +150,21 @@ export async function searchProjectInfo(projectName: string) {
   } catch (error) {
     console.error('Error searching project info:', error)
     
+    // API 키 오류 특별 처리
+    if (error instanceof Error && error.message.includes('API key not valid')) {
+      console.error('🚨 Gemini API 키가 유효하지 않습니다. 환경변수를 확인해주세요.')
+    }
+    
     // 기본 프로젝트 정보 반환 (AI 실패 시)
+    const fallbackName = projectName.toLowerCase().trim()
     return {
       project: {
-        name: projectName.toLowerCase().trim(),
+        name: fallbackName,
         token_symbol: null,
-        description: `${projectName} 프로젝트에 대한 정보를 자동으로 수집할 수 없었습니다. 수동으로 정보를 입력해주세요.`,
-        keyword1: null,
-        keyword2: null,
-        keyword3: null,
+        description: `${projectName} 프로젝트에 대한 정보를 자동으로 수집할 수 없었습니다. Gemini API 연결에 문제가 있습니다. 수동으로 정보를 입력해주세요.`,
+        keyword1: "DApp", // 기본값
+        keyword2: "Infrastructure", // 기본값
+        keyword3: "Blockchain", // 기본값
         homepage_url: null,
         whitepaper_url: null,
         docs_url: null,
