@@ -527,6 +527,47 @@ if (typeof window !== 'undefined') {
       console.error('💥 팀원 정보 API 테스트 오류:', error);
     }
   };
+
+  // Affiliates API 직접 테스트
+  (window as any).testAffiliatesAPI = async (screenName: string) => {
+    console.log(`🧪 Affiliates API 직접 테스트: @${screenName}`);
+    
+    try {
+      const result = await twitterAPI.getAffiliates(screenName);
+      console.log('🎯 Affiliates API 결과:', {
+        success: true,
+        count: result.length,
+        data: result
+      });
+    } catch (error) {
+      console.error('💥 Affiliates API 테스트 오류:', error);
+    }
+  };
+
+  // 다양한 계정으로 Affiliates 테스트
+  (window as any).testVariousAffiliates = async () => {
+    const testAccounts = ['x', 'twitter', 'elonmusk', 'berachain', 'solana', 'ethereum'];
+    
+    console.log('🧪 다양한 계정으로 Affiliates API 테스트 시작');
+    
+    for (const account of testAccounts) {
+      console.log(`\n--- 테스트 계정: @${account} ---`);
+      try {
+        const result = await twitterAPI.getAffiliates(account);
+        console.log(`✅ @${account}: ${result.length}개 제휴사 발견`);
+        if (result.length > 0) {
+          console.log('📋 샘플 데이터:', result.slice(0, 2));
+        }
+      } catch (error) {
+        console.error(`❌ @${account}: 오류 발생`, error);
+      }
+      
+      // API 호출 간격 (Rate Limit 방지)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    console.log('🏁 다양한 계정 테스트 완료');
+  };
 }
 
 // 트위터 핸들 추출 함수 (대소문자 보존)
