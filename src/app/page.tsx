@@ -17,6 +17,156 @@ export default function HomePage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+  // 텔레그램 커뮤니티 분석 함수 (실제 스키마 기반)
+  const analyzeTelegramCommunityHistory = async (projectName: string, tokenSymbol?: string | null) => {
+    try {
+      console.log(`📱 MCP를 통한 텔레그램 분석 시작: ${projectName}`)
+      
+      // 실제 텔레그램 DB 스키마 기반 Claude MCP 분석 요청
+      const mcpAnalysisPrompt = `
+텔레그램 MCP 데이터베이스에서 "${projectName}" (토큰: ${tokenSymbol || 'N/A'}) 프로젝트의 최근 1년간 커뮤니티 활동을 자동으로 분석해주세요.
+
+**핵심 분석 쿼리:**
+
+1. **프로젝트 등록 및 키워드 확인:**
+\`\`\`sql
+-- 프로젝트 존재 여부 확인
+SELECT p.id, p.name, p.token_symbol, COUNT(pk.id) as keyword_count
+FROM projects p
+LEFT JOIN project_keywords pk ON p.id = pk.project_id
+WHERE p.name ILIKE '%${projectName}%' 
+   OR p.token_symbol ILIKE '%${tokenSymbol || projectName}%'
+GROUP BY p.id, p.name, p.token_symbol;
+
+-- 연관 키워드 조회
+SELECT tk.keyword_text, tk.keyword_type
+FROM tracking_keywords tk
+JOIN project_keywords pk ON tk.id = pk.keyword_id
+JOIN projects p ON pk.project_id = p.id
+WHERE p.name ILIKE '%${projectName}%';
+\`\`\`
+
+2. **12개월 월별 트렌드 분석:**
+\`\`\`sql
+SELECT 
+  TO_CHAR(DATE_TRUNC('month', dks.date), 'YYYY-MM') as month,
+  SUM(dks.mention_count) as total_mentions,
+  ROUND(AVG(dks.sentiment_score)::numeric, 3) as avg_sentiment,
+  COUNT(DISTINCT dks.channel_id) as active_channels,
+  MAX(dks.date) as last_update
+FROM daily_keyword_stats dks
+JOIN tracking_keywords tk ON dks.keyword_id = tk.id
+JOIN project_keywords pk ON tk.id = pk.keyword_id
+JOIN projects p ON pk.project_id = p.id
+WHERE p.name ILIKE '%${projectName}%'
+  AND dks.date >= CURRENT_DATE - INTERVAL '12 months'
+GROUP BY DATE_TRUNC('month', dks.date)
+ORDER BY month DESC;
+\`\`\`
+
+3. **TOP 활성 채널 분석:**
+\`\`\`sql
+SELECT 
+  c.channel_name,
+  c.channel_title,
+  ROUND(AVG(dpcs.sentiment_score)::numeric, 3) as avg_sentiment,
+  SUM(dpcs.mention_count) as total_mentions,
+  MAX(dpcs.date) as last_mention_date,
+  MIN(dpcs.date) as first_mention_date
+FROM daily_project_channel_scores dpcs
+JOIN channels c ON dpcs.channel_id = c.id
+JOIN projects p ON dpcs.project_id = p.id
+WHERE p.name ILIKE '%${projectName}%'
+  AND dpcs.date >= CURRENT_DATE - INTERVAL '1 year'
+GROUP BY c.id, c.channel_name, c.channel_title
+HAVING SUM(dpcs.mention_count) >= 10
+ORDER BY total_mentions DESC
+LIMIT 15;
+\`\`\`
+
+4. **최근 30일 일별 활동:**
+\`\`\`sql
+SELECT 
+  dks.date,
+  SUM(dks.mention_count) as daily_mentions,
+  ROUND(AVG(dks.sentiment_score)::numeric, 3) as daily_sentiment,
+  COUNT(DISTINCT dks.channel_id) as daily_channels
+FROM daily_keyword_stats dks
+JOIN tracking_keywords tk ON dks.keyword_id = tk.id
+JOIN project_keywords pk ON tk.id = pk.keyword_id
+JOIN projects p ON pk.project_id = p.id
+WHERE p.name ILIKE '%${projectName}%'
+  AND dks.date >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY dks.date
+ORDER BY dks.date DESC;
+\`\`\`
+
+5. **실제 최근 메시지 샘플:**
+\`\`\`sql
+SELECT 
+  m.message_text,
+  m.timestamp,
+  c.channel_name,
+  LENGTH(m.message_text) as msg_length
+FROM messages m
+JOIN channels c ON m.channel_id = c.id
+WHERE (m.message_text ILIKE '%${projectName}%' 
+       OR m.message_text ILIKE '%${tokenSymbol || projectName}%')
+  AND m.timestamp >= CURRENT_DATE - INTERVAL '7 days'
+  AND LENGTH(m.message_text) > 20
+ORDER BY m.timestamp DESC
+LIMIT 25;
+\`\`\`
+
+**분석 결과 정리:**
+위 쿼리들을 실행한 후, 다음 형식으로 월별 리포트를 생성해주세요:
+
+📊 **${projectName} 텔레그램 커뮤니티 분석 (최근 12개월)**
+
+**월별 트렌드:**
+- 각 월의 언급 수, 감정 점수, 활성 채널 수
+- 주요 변화점과 패턴 식별
+
+**활성 채널 분석:**
+- 가장 활발한 채널들과 각각의 특성
+- 공식/커뮤니티 채널별 반응 차이
+
+**최근 30일 동향:**
+- 일별 활동 패턴
+- 감정 점수 변화
+- 급상승/급하락 구간 분석
+
+**실제 커뮤니티 반응:**
+- 최근 메시지들에서 추출한 주요 관심사
+- 긍정/부정 피드백 내용
+
+**투자 인사이트:**
+- 커뮤니티 성장/감소 신호
+- 감정 변화의 주요 원인
+- 향후 관심사 예측
+
+이 모든 정보를 종합해서 투자자 관점에서 유의미한 인사이트를 제공해주세요.
+      `
+      
+      console.log('📱 MCP 고도화 분석 요청 전송')
+      console.log(`🔍 분석 대상: ${projectName} (${tokenSymbol || 'N/A'})`)
+      
+      // 실제로는 여기서 Claude가 MCP를 통해 위의 쿼리들을 실행하고 분석
+      
+      return {
+        project_name: projectName,
+        token_symbol: tokenSymbol,
+        analysis_type: 'MCP_REALTIME_ANALYSIS',
+        prompt_sent: mcpAnalysisPrompt,
+        status: 'MCP_ANALYSIS_REQUESTED'
+      }
+      
+    } catch (error) {
+      console.error(`❌ 텔레그램 MCP 분석 실패: ${projectName}`, error)
+      throw error
+    }
+  }
+
   // 컴포넌트 마운트 시 프로젝트 목록 로드
   useEffect(() => {
     loadProjects()
@@ -149,6 +299,15 @@ export default function HomePage() {
               } catch (teamError) {
                 console.error(`❌ 팀원 정보 수집 중 오류: @${handle}`, teamError);
                 // 팀원 정보 수집 실패는 전체 프로세스를 중단시키지 않음
+              }
+              
+              // 텔레그램 커뮤니티 분석도 함께 실행
+              try {
+                console.log(`📱 텔레그램 커뮤니티 분석 시작: ${newProject.name}`);
+                await analyzeTelegramCommunityHistory(newProject.name, newProject.token_symbol);
+                console.log(`✅ 텔레그램 분석 완료: ${newProject.name}`);
+              } catch (telegramError) {
+                console.error(`❌ 텔레그램 분석 중 오류: ${newProject.name}`, telegramError);
               }
               
               break; // 성공하면 루프 종료

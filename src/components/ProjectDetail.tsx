@@ -7,6 +7,7 @@ import { aiUrlValidator, ProjectUrlAnalysis } from '@/lib/aiUrlValidator'
 import PremiumInvestmentNotice from './PremiumInvestmentNotice'
 import TwitterInfo from './TwitterInfo'
 import TeamMembersInfo from './TeamMembersInfo'
+import TelegramCommunityInfo from './TelegramCommunityInfo'
 
 
 interface ProjectDetailProps {
@@ -594,6 +595,14 @@ export default function ProjectDetail({
               {/* 팀원 정보 섹션 */}
               <div className="pt-4 border-t">
                 <TeamMembersInfo 
+                  projectId={project.id}
+                  projectName={project.name}
+                />
+              </div>
+
+              {/* 텔레그램 커뮤니티 정보 섹션 */}
+              <div className="pt-4 border-t">
+                <TelegramCommunityInfo 
                   projectId={project.id}
                   projectName={project.name}
                 />
