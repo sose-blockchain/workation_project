@@ -333,17 +333,45 @@ class TwitterAPI {
       console.log('🔍 Twitter Affiliates API 응답:', {
         hasData: !!data,
         isArray: Array.isArray(data),
-        length: Array.isArray(data) ? data.length : 0
+        length: Array.isArray(data) ? data.length : 0,
+        dataType: typeof data,
+        keys: data ? Object.keys(data) : [],
+        sampleData: data
       });
       
-      if (!data || !Array.isArray(data)) {
-        console.log(`❌ Twitter: '${screenname}'의 제휴사 정보를 가져올 수 없습니다.`);
+      // 응답 구조 분석 및 처리
+      let affiliates = [];
+      
+      if (Array.isArray(data)) {
+        affiliates = data;
+      } else if (data && typeof data === 'object') {
+        // 객체 형태의 응답인 경우, 다양한 키를 확인
+        if (data.users && Array.isArray(data.users)) {
+          affiliates = data.users;
+        } else if (data.data && Array.isArray(data.data)) {
+          affiliates = data.data;
+        } else if (data.affiliates && Array.isArray(data.affiliates)) {
+          affiliates = data.affiliates;
+        } else {
+          // 객체의 값들 중 배열인 것을 찾기
+          for (const key in data) {
+            if (Array.isArray(data[key]) && data[key].length > 0) {
+              console.log(`🔍 발견된 배열 키: ${key}, 길이: ${data[key].length}`);
+              affiliates = data[key];
+              break;
+            }
+          }
+        }
+      }
+      
+      if (affiliates.length === 0) {
+        console.log(`📭 Twitter: '${screenname}'의 제휴사 정보 없음 (빈 응답 또는 구조 불일치)`);
         return [];
       }
 
-      console.log(`✅ Twitter: ${screenname}의 제휴사 ${data.length}개 가져옴`);
+      console.log(`✅ Twitter: ${screenname}의 제휴사 ${affiliates.length}개 가져옴`);
 
-      return data.map((user: any) => ({
+      return affiliates.map((user: any) => ({
         id: String(user.id_str || user.id || `affiliate_${Date.now()}_${Math.random()}`),
         name: user.name || 'Unknown User',
         screen_name: user.screen_name || user.username || '',
@@ -357,7 +385,7 @@ class TwitterAPI {
         verified: Boolean(user.verified),
         location: user.location || null,
         url: user.url || null
-      })).filter(user => user.screen_name); // 유효한 사용자만 필터링
+      })).filter((user: any) => user.screen_name); // 유효한 사용자만 필터링
     } catch (error) {
       console.error(`❌ Twitter Affiliates API 오류 (${screenname}):`, error);
       return [];

@@ -305,5 +305,83 @@
 
 ---
 
+## 2025-01-28 - 팀원 정보 수집 기능 구현 중 발생한 오류들 (Major)
+
+### 오류 내용
+
+#### 1. Vercel 배포 오류 - TeamMembersInfo 컴포넌트 null 체크 문제
+- 오류 메시지: `'teamOverview' is possibly 'null'. ./src/components/TeamMembersInfo.tsx:129:61`
+- 발생 상황: TypeScript 컴파일 중 null 안전성 검사 실패
+- 영향 범위: 배포 실패
+
+#### 2. RapidAPI Twitter Affiliates API 응답 구조 문제
+- 오류 메시지: `❌ Twitter: 'solana'의 제휴사 정보를 가져올 수 없습니다.`
+- 응답 구조: `{hasData: true, isArray: false, length: 0}`
+- 발생 상황: `/affilates.php` 엔드포인트에서 예상과 다른 응답 구조
+- 영향 범위: 팀원 정보 수집 기능 실패
+
+#### 3. TypeScript any 타입 오류
+- 오류 메시지: `Parameter 'user' implicitly has an 'any' type.`
+- 발생 상황: filter 함수에서 타입 지정 누락
+- 영향 범위: 린트 오류
+
+### 해결 방법
+
+#### 1. TeamMembersInfo 컴포넌트 null 체크 수정
+1. 데이터베이스 스키마가 적용되기 전까지 컴포넌트를 임시 비활성화
+2. null 체크가 필요한 코드 부분을 주석 처리
+3. 안내 메시지만 표시하도록 수정
+
+#### 2. RapidAPI Affiliates 응답 구조 개선
+1. 응답 데이터 구조 분석 로직 추가:
+   - `Array.isArray(data)` 확인
+   - 객체인 경우 `data.users`, `data.data`, `data.affiliates` 키 확인
+   - 객체의 모든 값 중 배열인 것 탐색
+2. 상세한 디버깅 로그 추가
+3. 다양한 응답 형식에 대응하는 파싱 로직 구현
+
+#### 3. TypeScript 타입 오류 수정
+1. filter 함수에서 `(user: any)` 타입 명시적 지정
+2. 린트 오류 해결
+
+### 예방 방법
+
+#### 1. 컴포넌트 개발 시
+- TypeScript strict 모드에서 null 체크 필수
+- 데이터베이스 스키마 변경 시 관련 컴포넌트 동시 업데이트
+- 임시 비활성화 시 명확한 주석과 활성화 조건 명시
+
+#### 2. 외부 API 연동 시
+- API 응답 구조 사전 테스트 및 문서화
+- 다양한 응답 형식에 대응하는 방어적 프로그래밍
+- 실패 시 graceful degradation 적용
+
+#### 3. TypeScript 관리
+- 정기적인 린트 체크 실행
+- any 타입 사용 최소화
+- 타입 안전성 검증 자동화
+
+---
+
+## 2025-01-28 - RapidAPI Twitter API 제한사항 및 개선 방안 (Major)
+
+### 현재 상황
+- Solana, Berachain 등 주요 프로젝트에서 제휴사 정보 수집 실패
+- API 응답은 성공하지만 배열 형태가 아닌 다른 구조로 반환
+- 팔로잉 정보도 마찬가지로 빈 응답 반환
+
+### 분석된 문제점
+1. **API 응답 구조 불일치**: 문서화된 구조와 실제 응답이 다름
+2. **계정별 차이**: 일부 계정은 제휴사 정보를 제공하지 않을 수 있음
+3. **API 제한**: 무료 플랜의 기능 제한 가능성
+
+### 향후 개선 방안
+1. **대안 API 탐색**: 다른 Twitter API 서비스 검토
+2. **Manual 입력 옵션**: 사용자가 직접 팀원 정보를 입력할 수 있는 기능
+3. **웹 스크래핑**: Twitter 웹페이지에서 공개된 정보 수집 (단, 이용약관 확인 필요)
+4. **AI 분석 개선**: 프로젝트 웹사이트나 문서에서 팀원 정보 추출
+
+---
+
 **마지막 업데이트**: 2025-01-28
-**기록된 오류 수**: 12개
+**기록된 오류 수**: 14개
