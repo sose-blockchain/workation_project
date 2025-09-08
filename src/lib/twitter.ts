@@ -23,6 +23,50 @@ export interface TwitterTimelineItem {
   retweet_count: number;
   favorite_count: number;
   user: TwitterUserInfo;
+  is_retweet?: boolean;
+  retweeted_status?: TwitterTimelineItem;
+}
+
+export interface TwitterTweetDetail {
+  id: string;
+  text: string;
+  created_at: string;
+  retweet_count: number;
+  favorite_count: number;
+  reply_count: number;
+  user: TwitterUserInfo;
+  is_retweet: boolean;
+  retweeted_status?: TwitterTweetDetail;
+  media?: Array<{
+    type: string;
+    url: string;
+  }>;
+}
+
+export interface TwitterThreadItem {
+  id: string;
+  text: string;
+  created_at: string;
+  user: TwitterUserInfo;
+  reply_to?: string;
+}
+
+export interface MonthlyTwitterActivity {
+  month: string; // YYYY-MM 형식
+  tweets: TwitterTweetDetail[];
+  retweets: TwitterTweetDetail[];
+  total_tweets: number;
+  total_retweets: number;
+  engagement_summary: {
+    total_likes: number;
+    total_retweets: number;
+    avg_engagement: number;
+  };
+  content_analysis: {
+    top_keywords: string[];
+    main_topics: string[];
+    sentiment: 'positive' | 'neutral' | 'negative';
+  };
 }
 
 class TwitterAPI {
@@ -569,39 +613,6 @@ if (typeof window !== 'undefined') {
     console.log('🏁 다양한 계정 테스트 완료');
   };
 
-  // 특정 프로젝트의 팀원 데이터 직접 조회
-  (window as any).checkProjectTeamMembers = async (projectName: string) => {
-    console.log(`🔍 프로젝트 팀원 데이터 조회: ${projectName}`);
-    
-    try {
-      // 먼저 프로젝트 정보 조회
-      const projects = await fetch('/api/projects').then(res => res.json());
-      const project = projects.find((p: any) => 
-        p.name.toLowerCase().includes(projectName.toLowerCase())
-      );
-      
-      if (!project) {
-        console.error(`❌ 프로젝트 '${projectName}'을 찾을 수 없습니다.`);
-        return;
-      }
-      
-      console.log(`✅ 프로젝트 발견:`, project);
-      
-      // 팀원 정보 조회
-      const teamMembers = await fetch(`/api/team-members?projectId=${project.id}`)
-        .then(res => res.json());
-      
-      console.log(`📊 팀원 정보 결과:`, {
-        projectId: project.id,
-        projectName: project.name,
-        teamMembersCount: teamMembers.length,
-        teamMembers: teamMembers
-      });
-      
-    } catch (error) {
-      console.error(`💥 프로젝트 팀원 조회 오류:`, error);
-    }
-  };
 }
 
 // 트위터 핸들 추출 함수 (대소문자 보존)

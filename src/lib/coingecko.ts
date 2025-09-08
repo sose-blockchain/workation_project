@@ -32,15 +32,16 @@ class CoinGeckoAPI {
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = process.env.RAPIDAPI_KEY || '';
-    this.apiHost = process.env.RAPIDAPI_HOST_COINGECKO || 'coingecko-api-without-rate-limit.p.rapidapi.com';
+    // Twitter API와 동일한 RapidAPI 키 사용
+    this.apiKey = process.env.NEXT_PUBLIC_TWITTER_API_KEY || '';
+    this.apiHost = process.env.NEXT_PUBLIC_COINGECKO_API_HOST || 'coingecko-api-without-rate-limit.p.rapidapi.com';
     this.baseUrl = `https://${this.apiHost}`;
     
     if (!this.apiKey) {
-      console.warn('⚠️ RAPIDAPI_KEY가 설정되지 않았습니다.');
+      console.warn('⚠️ NEXT_PUBLIC_TWITTER_API_KEY가 설정되지 않았습니다. (CoinGecko API 키로 사용)');
     }
-    if (!process.env.RAPIDAPI_HOST_COINGECKO) {
-      console.warn('⚠️ RAPIDAPI_HOST_COINGECKO가 설정되지 않았습니다. 기본값 사용: coingecko-api-without-rate-limit.p.rapidapi.com');
+    if (!process.env.NEXT_PUBLIC_COINGECKO_API_HOST) {
+      console.warn('⚠️ NEXT_PUBLIC_COINGECKO_API_HOST가 설정되지 않았습니다. 기본값 사용: coingecko-api-without-rate-limit.p.rapidapi.com');
     }
   }
 

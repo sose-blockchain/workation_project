@@ -8,6 +8,7 @@ import PremiumInvestmentNotice from './PremiumInvestmentNotice'
 import TwitterInfo from './TwitterInfo'
 import TeamMembersInfo from './TeamMembersInfo'
 import TelegramCommunityInfo from './TelegramCommunityInfo'
+import TwitterActivityAnalysis from './TwitterActivityAnalysis'
 
 
 interface ProjectDetailProps {
@@ -599,6 +600,16 @@ export default function ProjectDetail({
                   projectName={project.name}
                 />
               </div>
+
+              {/* Twitter 활동 분석 섹션 */}
+              {project.detected_twitter_url && (
+                <div className="pt-4 border-t">
+                  <TwitterActivityAnalysis 
+                    screenName={project.detected_twitter_url.replace(/.*\//, '').replace('@', '')}
+                    projectName={project.name}
+                  />
+                </div>
+              )}
 
               {/* 텔레그램 커뮤니티 정보 섹션 */}
               <div className="pt-4 border-t">
