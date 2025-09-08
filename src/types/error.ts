@@ -29,7 +29,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   // API 오류
   'twitter_api_limit': 'Twitter API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.',
   'twitter_user_not_found': 'Twitter 사용자를 찾을 수 없습니다.',
-  'cryptorank_api_error': 'CryptoRank API에서 데이터를 가져올 수 없습니다.',
+  'coingecko_api_error': 'CoinGecko API에서 데이터를 가져올 수 없습니다.',
   'gemini_api_error': 'AI 분석 서비스에 일시적인 문제가 발생했습니다.',
   
   // 일반 오류

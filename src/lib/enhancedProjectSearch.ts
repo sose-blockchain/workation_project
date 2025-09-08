@@ -1,5 +1,5 @@
 import { searchProjectInfo } from './gemini';
-import { cryptoRankAPI } from './cryptorank';
+import { coinGeckoAPI } from './coingecko';
 import { twitterService, TwitterService } from './twitterService';
 
 interface EnhancedProjectResult {
@@ -13,19 +13,19 @@ interface EnhancedProjectResult {
   };
 }
 
-// Gemini AI와 CryptoRank API를 결합한 향상된 프로젝트 검색
+// Gemini AI와 CoinGecko API를 결합한 향상된 프로젝트 검색
 export async function getEnhancedProjectInfo(projectName: string): Promise<EnhancedProjectResult> {
   try {
     console.log(`Enhanced search started for: ${projectName}`);
 
-    // 1. CryptoRank API에서 기본 정보 (이름, 심볼) 가져오기
-    let cryptoRankProject = null;
+    // 1. CoinGecko API에서 기본 정보 (이름, 심볼, 순위) 가져오기
+    let coinGeckoProject = null;
     try {
-      cryptoRankProject = await cryptoRankAPI.getProjectInfo(projectName);
-      console.log('✅ CryptoRank API 호출 성공');
-    } catch (cryptoRankError) {
-      console.warn('⚠️ CryptoRank API 호출 실패 (계속 진행):', cryptoRankError);
-      // CryptoRank 실패해도 계속 진행
+      coinGeckoProject = await coinGeckoAPI.getProjectInfo(projectName);
+      console.log('✅ CoinGecko API 호출 성공');
+    } catch (coinGeckoError) {
+      console.warn('⚠️ CoinGecko API 호출 실패 (계속 진행):', coinGeckoError);
+      // CoinGecko 실패해도 계속 진행
     }
 
     // 2. Gemini AI로 기본 프로젝트 정보 수집 (투자 라운드 제외)
@@ -36,36 +36,40 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       description: aiResult.project.description?.substring(0, 100) + '...'
     });
 
-    // 3. CryptoRank에서 가져온 정보로 AI 결과 보완 (정확한 매칭 확인)
+    // 3. CoinGecko에서 가져온 정보로 AI 결과 보완 (정확한 매칭 확인)
     let finalProject: any = { ...aiResult.project };
     let basicInfoSource = 'Gemini AI';
 
-    if (cryptoRankProject) {
-      console.log('🔍 CryptoRank vs AI 프로젝트 비교:', {
+    if (coinGeckoProject) {
+      console.log('🔍 CoinGecko vs AI 프로젝트 비교:', {
         input: projectName,
-        cryptorank: cryptoRankProject.name,
+        coingecko: coinGeckoProject.name,
         ai: aiResult.project.name
       });
 
-      // 검색어와 CryptoRank 결과가 유사한지 확인
+      // 검색어와 CoinGecko 결과가 유사한지 확인
       const searchSimilarity = calculateSimilarity(
         projectName.toLowerCase(),
-        cryptoRankProject.name.toLowerCase()
+        coinGeckoProject.name.toLowerCase()
       );
       
       console.log(`📊 유사도 검사: ${searchSimilarity}%`);
 
-      // 유사도가 70% 이상일 때만 CryptoRank 정보 사용
+      // 유사도가 70% 이상일 때만 CoinGecko 정보 사용
       if (searchSimilarity >= 70) {
         finalProject = {
           ...aiResult.project,
-          name: cryptoRankProject.name,
-          token_symbol: cryptoRankProject.symbol,
+          name: coinGeckoProject.name,
+          token_symbol: coinGeckoProject.symbol,
+          market_cap_rank: coinGeckoProject.market_cap_rank,
+          current_price: coinGeckoProject.current_price,
+          market_cap: coinGeckoProject.market_cap,
+          price_change_24h: coinGeckoProject.price_change_percentage_24h
         };
-        basicInfoSource = 'CryptoRank API + Gemini AI';
-        console.log(`✅ CryptoRank 정보 적용: ${cryptoRankProject.name} (${cryptoRankProject.symbol})`);
+        basicInfoSource = 'CoinGecko API + Gemini AI';
+        console.log(`✅ CoinGecko 정보 적용: ${coinGeckoProject.name} (${coinGeckoProject.symbol}) - 순위: ${coinGeckoProject.market_cap_rank || 'N/A'}`);
       } else {
-        console.log(`❌ CryptoRank 정보 무시 (유사도 낮음): ${cryptoRankProject.name}`);
+        console.log(`❌ CoinGecko 정보 무시 (유사도 낮음): ${coinGeckoProject.name}`);
       }
     }
 
@@ -145,7 +149,7 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
   }
 }
 
-// 프로젝트명 정규화 (CryptoRank 검색 정확도 향상)
+// 프로젝트명 정규화 (CoinGecko 검색 정확도 향상)
 export function normalizeProjectName(name: string): string {
   return name
     .toLowerCase()

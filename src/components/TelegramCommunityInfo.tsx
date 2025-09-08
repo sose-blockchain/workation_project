@@ -420,8 +420,44 @@ LIMIT 20
       }, 2500)
       
       setTimeout(() => {
-        console.log('✅ 분석 완료: 최종 결과 표시')
-        setAnalysisResult(generateSampleAnalysis(projectName))
+        console.log('❌ MCP 연결 실패: 실제 데이터 없음')
+        console.log('🚫 Claude가 Cursor MCP에 접근할 수 없음')
+        
+        setAnalysisResult(`❌ **MCP 연결 실패**
+
+⚠️ **문제 상황:**
+브라우저에서 실행되는 코드는 Cursor의 로컬 MCP에 접근할 수 없습니다.
+
+🔍 **기술적 원인:**
+1. **브라우저 제한**: 웹 애플리케이션은 로컬 시스템의 MCP 서버에 직접 연결 불가
+2. **Claude 접근 불가**: Claude AI가 Cursor IDE 내부의 MCP 설정을 읽을 수 없음
+3. **네트워크 분리**: 배포된 웹앱과 로컬 개발 환경의 분리
+
+📊 **실제 확인된 상황:**
+- ✅ 프롬프트 생성: 완료 (8,939 bytes)
+- ❌ MCP 도구 실행: 실패
+- ❌ Supabase 텔레그램 DB 연결: 없음
+- ❌ 실제 데이터 조회: 불가능
+
+🔧 **해결 방안:**
+
+**방법 1: API 라우트 방식**
+- Next.js API 라우트에서 서버사이드 MCP 연결
+- 브라우저 → API → MCP → Supabase 구조
+
+**방법 2: 직접 Supabase 연결**
+- 텔레그램 Supabase 클라이언트 직접 생성
+- 환경변수로 연결 정보 관리
+
+**방법 3: Claude Desktop 활용**
+- Claude Desktop에서 MCP 직접 실행
+- 결과를 복사-붙여넣기로 표시
+
+⚠️ **중요**: 현재 표시되는 "분석 완료" 결과는 모두 샘플 데이터입니다.
+실제 텔레그램 커뮤니티 데이터가 아닙니다.
+
+**다음 단계**: 실제 데이터 연결을 위한 아키텍처 변경이 필요합니다.`)
+        
         setIsAnalyzing(false)
         clearTimeout(timeoutId) // 타임아웃 클리어
       }, 3500)

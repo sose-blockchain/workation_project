@@ -52,12 +52,12 @@ export default function PremiumInvestmentNotice({ projectId }: PremiumInvestment
         
         <p className="text-gray-600 mb-4 max-w-sm mx-auto">
           검증된 투자 데이터는 프리미엄 서비스를 통해서만 제공됩니다.
-          CryptoRank Pro 구독을 통해 정확한 투자 라운드 정보를 확인하세요.
+          CoinGecko Pro 구독을 통해 정확한 투자 라운드 정보를 확인하세요.
         </p>
         
         <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6 max-w-xs mx-auto">
-          <div className="text-sm text-gray-500 mb-1">CryptoRank Pro</div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">월 $475</div>
+          <div className="text-sm text-gray-500 mb-1">CoinGecko Pro</div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">월 $199</div>
           <div className="text-sm text-gray-600">
             • 실시간 투자 라운드 데이터<br/>
             • 정확한 밸류에이션 정보<br/>
@@ -76,12 +76,12 @@ export default function PremiumInvestmentNotice({ projectId }: PremiumInvestment
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            CryptoRank Pro 구독하기
+            CoinGecko Pro 구독하기
           </a>
           
           <div>
             <a
-              href="https://cryptorank.io/pricing"
+              href="https://www.coingecko.com/en/api/pricing"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:text-blue-800 underline"
@@ -99,7 +99,7 @@ export default function PremiumInvestmentNotice({ projectId }: PremiumInvestment
         </h5>
         <ul className="text-sm text-gray-600 space-y-1">
           <li>• 기존 AI 기반 투자 정보: <span className="text-red-600 font-medium">비활성화</span></li>
-          <li>• 프로젝트 기본 정보: <span className="text-green-600 font-medium">CryptoRank API 연동</span></li>
+          <li>• 프로젝트 기본 정보: <span className="text-green-600 font-medium">CoinGecko API 연동</span></li>
           <li>• 정확한 투자 데이터: <span className="text-blue-600 font-medium">프리미엄 서비스 예정</span></li>
         </ul>
       </div>

@@ -35,8 +35,8 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
         </p>
         
         <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
-          <div className="text-sm text-gray-500 mb-1">CryptoRank Pro 구독 시</div>
-          <div className="text-lg font-semibold text-gray-900">월 $475</div>
+          <div className="text-sm text-gray-500 mb-1">CoinGecko Pro 구독 시</div>
+          <div className="text-lg font-semibold text-gray-900">월 $199</div>
           <div className="text-sm text-gray-600 mt-1">
             실시간 투자 라운드 데이터, 밸류에이션, 투자자 정보
           </div>
@@ -44,7 +44,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
         
         <p className="text-sm text-gray-500 mb-4">
           정확하고 최신의 투자 라운드 정보가 필요하신 경우 
-          <span className="font-medium"> CryptoRank Pro </span>
+          <span className="font-medium"> CoinGecko Pro </span>
           구독을 고려해주세요.
         </p>
         
@@ -64,7 +64,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            CryptoRank 요금제 확인
+            CoinGecko 요금제 확인
           </a>
         </div>
       </div>

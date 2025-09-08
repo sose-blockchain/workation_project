@@ -232,7 +232,7 @@ LIMIT 25;
         }
       }
 
-      // AI와 CryptoRank API로 향상된 프로젝트 정보 검색
+      // AI와 CoinGecko API로 향상된 프로젝트 정보 검색
       const enhancedResult = await getEnhancedProjectInfo(projectName)
       console.log(`🤖 AI 검색 완료: ${enhancedResult.project.name}`)
       
@@ -255,7 +255,7 @@ LIMIT 25;
 
 
       // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
-      // CryptoRank Pro 구독 시 투자 라운드 데이터 저장 예정
+      // CoinGecko Pro 구독 시 추가 데이터 저장 예정
 
       // 2. 트위터 정보가 발견된 경우 자동으로 수집 (여러 후보 시도)
       let twitterMessage = '';
@@ -369,8 +369,8 @@ LIMIT 25;
         }
       }
 
-      const baseMessage = enhancedResult.data_sources.basic_info.includes('CryptoRank') 
-        ? '프로젝트가 성공적으로 저장되었습니다! (CryptoRank API로 정확한 프로젝트명/심볼 확인)'
+      const baseMessage = enhancedResult.data_sources.basic_info.includes('CoinGecko') 
+        ? '프로젝트가 성공적으로 저장되었습니다! (CoinGecko API로 정확한 프로젝트명/심볼 확인)'
         : '프로젝트가 성공적으로 저장되었습니다!';
       
       setMessage(baseMessage + twitterMessage)
