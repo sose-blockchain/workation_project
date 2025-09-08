@@ -14,6 +14,7 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
   const [teamOverview, setTeamOverview] = useState<TwitterTeamOverview | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showAllMembers, setShowAllMembers] = useState(false)
 
   useEffect(() => {
     loadTeamInfo()
@@ -24,10 +25,18 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
     setError(null)
     
     try {
+      console.log(`🔍 팀원 정보 로드 시작: project_id=${projectId}, projectName=${projectName}`)
+      
       const [members, overview] = await Promise.all([
         twitterService.getTeamMembers(projectId),
         twitterService.getTeamOverview(projectId)
       ])
+      
+      console.log(`📊 팀원 정보 로드 결과:`, {
+        members: members.length,
+        overview: overview,
+        sampleMembers: members.slice(0, 2)
+      })
       
       setTeamMembers(members)
       setTeamOverview(overview)
@@ -114,17 +123,9 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
           팀원 개요
         </h3>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-2 gap-6 text-sm">
           <div>
-            <div className="text-gray-500">총 팀원</div>
-            <div className="font-semibold text-blue-600">{teamOverview.total_team_members}명</div>
-          </div>
-          <div>
-            <div className="text-gray-500">인증 계정</div>
-            <div className="font-semibold text-green-600">{teamOverview.verified_team_members}명</div>
-          </div>
-          <div>
-            <div className="text-gray-500">제휴 계정</div>
+            <div className="text-gray-500">총 제휴 계정</div>
             <div className="font-semibold text-purple-600">{teamOverview.affiliate_members}명</div>
           </div>
           <div>
@@ -144,7 +145,7 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
         </h3>
         
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {teamMembers.slice(0, 10).map((member) => (
+          {(showAllMembers ? teamMembers : teamMembers.slice(0, 10)).map((member) => (
             <div key={member.id} className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg border border-gray-100">
               {/* 프로필 이미지 */}
               <div className="flex-shrink-0">
@@ -210,11 +211,25 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
             </div>
           ))}
           
-          {teamMembers.length > 10 && (
+          {teamMembers.length > 10 && !showAllMembers && (
             <div className="text-center py-2">
-              <span className="text-xs text-gray-500">
+              <button 
+                onClick={() => setShowAllMembers(true)}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 px-3 py-2 rounded-md hover:bg-blue-50"
+              >
                 +{teamMembers.length - 10}명 더 보기
-              </span>
+              </button>
+            </div>
+          )}
+          
+          {showAllMembers && teamMembers.length > 10 && (
+            <div className="text-center py-2">
+              <button 
+                onClick={() => setShowAllMembers(false)}
+                className="text-xs text-gray-600 hover:text-gray-800 hover:underline transition-colors duration-200 px-3 py-2 rounded-md hover:bg-gray-50"
+              >
+                접기
+              </button>
             </div>
           )}
         </div>
