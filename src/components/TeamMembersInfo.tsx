@@ -16,7 +16,8 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadTeamInfo()
+    // 데이터베이스 스키마가 적용되면 활성화
+    // loadTeamInfo()
   }, [projectId])
 
   const loadTeamInfo = async () => {
@@ -84,6 +85,24 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
     )
   }
 
+  // 데이터베이스 스키마가 적용될 때까지 임시로 안내 메시지 표시
+  return (
+    <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+      <div className="flex items-center space-x-2">
+        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <div className="text-sm text-blue-600 font-medium">팀원 정보 기능 준비 중</div>
+          <div className="text-xs text-blue-500 mt-1">
+            RapidAPI 제휴 계정 수집 기능이 구현되었습니다. 데이터베이스 스키마 적용 후 활성화됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  /* 데이터베이스 스키마 적용 후 활성화할 코드
   if (teamMembers.length === 0) {
     return (
       <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
@@ -96,6 +115,7 @@ export default function TeamMembersInfo({ projectId, projectName }: TeamMembersI
       </div>
     )
   }
+  */
 
   return (
     <div className="space-y-4">

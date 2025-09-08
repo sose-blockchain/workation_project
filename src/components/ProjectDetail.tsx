@@ -599,18 +599,7 @@ export default function ProjectDetail({
                 />
               </div>
 
-              {project.team_twitter_urls && project.team_twitter_urls.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">주요 팀원 트위터</h3>
-                  <div className="space-y-1">
-                    {project.team_twitter_urls.map((url, index) => (
-                      <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:underline">
-                        {url}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+{/* AI로 가져온 팀원 정보는 부정확하므로 제거 */}
 
               {/* 투자 정보 섹션 */}
               <div className="pt-4 border-t">

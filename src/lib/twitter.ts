@@ -365,7 +365,7 @@ class TwitterAPI {
   }
 
   /**
-   * 팀원 정보 종합 수집 (팔로잉 + 제휴사)
+   * 팀원 정보 수집 (제휴 계정만)
    */
   async getTeamMembers(screenname: string): Promise<{
     following: TwitterUserInfo[];
@@ -373,39 +373,17 @@ class TwitterAPI {
     combined: TwitterUserInfo[];
   }> {
     try {
-      console.log(`🔍 팀원 정보 수집 시작: @${screenname}`);
+      console.log(`🔍 팀원 정보 수집 시작: @${screenname} (제휴 계정만)`);
       
-      // 팔로잉과 제휴사 정보를 병렬로 수집
-      const [following, affiliates] = await Promise.all([
-        this.getFollowing(screenname),
-        this.getAffiliates(screenname)
-      ]);
+      // 제휴사 정보만 수집 (팔로잉은 너무 많고 부정확함)
+      const affiliates = await this.getAffiliates(screenname);
 
-      // 중복 제거하여 통합 목록 생성
-      const combinedMap = new Map<string, TwitterUserInfo>();
-      
-      // 팔로잉 목록 추가
-      following.forEach(user => {
-        if (user.screen_name) {
-          combinedMap.set(user.screen_name.toLowerCase(), user);
-        }
-      });
-      
-      // 제휴사 목록 추가 (중복 시 제휴사 정보 우선)
-      affiliates.forEach(user => {
-        if (user.screen_name) {
-          combinedMap.set(user.screen_name.toLowerCase(), user);
-        }
-      });
-
-      const combined = Array.from(combinedMap.values());
-
-      console.log(`✅ 팀원 정보 수집 완료: 팔로잉 ${following.length}명, 제휴사 ${affiliates.length}개, 통합 ${combined.length}명`);
+      console.log(`✅ 팀원 정보 수집 완료: 제휴사 ${affiliates.length}개`);
 
       return {
-        following,
+        following: [], // 팔로잉 정보는 사용하지 않음
         affiliates,
-        combined
+        combined: affiliates // 제휴사만 사용
       };
     } catch (error) {
       console.error(`❌ 팀원 정보 수집 오류 (${screenname}):`, error);

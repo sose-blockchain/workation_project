@@ -551,66 +551,8 @@ export class TwitterService {
 
       const savedMembers: TwitterTeamMember[] = [];
 
-      // 팔로잉 목록 저장
-      for (const user of teamData.following) {
-        const memberData = {
-          project_id: projectId,
-          twitter_account_id: twitterAccountId,
-          twitter_id: user.id,
-          screen_name: user.screen_name,
-          name: user.name,
-          description: user.description || null,
-          profile_image_url: user.profile_image_url || null,
-          followers_count: user.followers_count,
-          friends_count: user.friends_count,
-          statuses_count: user.statuses_count,
-          favourites_count: user.favourites_count,
-          verified: user.verified,
-          location: user.location || null,
-          url: user.url || null,
-          created_at: user.created_at,
-          relationship_type: 'following' as const,
-          is_team_member: this.isLikelyTeamMember(user),
-          confidence_score: this.calculateTeamMemberConfidence(user, 'following'),
-          last_updated: new Date().toISOString(),
-          data_source: 'twitter_api'
-        };
-
-        const { data, error } = await supabase
-          .from('twitter_team_members')
-          .insert(memberData)
-          .select()
-          .single();
-
-        if (error) {
-          console.error(`팀원 저장 오류 (${user.screen_name}):`, error);
-          continue;
-        }
-
-        savedMembers.push(data as TwitterTeamMember);
-      }
-
-      // 제휴사 목록 저장 (중복 제거)
+      // 제휴사 목록만 저장 (팔로잉은 사용하지 않음)
       for (const user of teamData.affiliates) {
-        // 이미 팔로잉으로 저장된 경우 관계 타입을 'both'로 업데이트
-        const existingMember = savedMembers.find(m => m.screen_name === user.screen_name);
-        
-        if (existingMember) {
-          const { error } = await supabase
-            .from('twitter_team_members')
-            .update({ 
-              relationship_type: 'both',
-              confidence_score: this.calculateTeamMemberConfidence(user, 'both')
-            })
-            .eq('id', existingMember.id);
-
-          if (error) {
-            console.error(`팀원 관계 업데이트 오류 (${user.screen_name}):`, error);
-          }
-          continue;
-        }
-
-        // 새로운 제휴사 저장
         const memberData = {
           project_id: projectId,
           twitter_account_id: twitterAccountId,
