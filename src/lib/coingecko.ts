@@ -75,13 +75,13 @@ class CoinGeckoAPI {
 
   // 프로젝트 검색 (search endpoint 사용)
   async searchProjects(query: string): Promise<CoinGeckoSearchResult> {
-    return this.request<CoinGeckoSearchResult>('/search', { query });
+    return this.request<CoinGeckoSearchResult>('/api/v3/search', { query });
   }
 
   // 특정 코인 정보 가져오기
   async getCoinById(coinId: string): Promise<CoinGeckoProject | null> {
     try {
-      const coinData = await this.request<CoinGeckoProject>(`/coins/${coinId}`, {
+      const coinData = await this.request<CoinGeckoProject>(`/api/v3/coins/${coinId}`, {
         localization: false,
         tickers: false,
         market_data: true,
@@ -100,7 +100,7 @@ class CoinGeckoAPI {
   // 코인 목록으로 기본 정보 가져오기 (더 빠름)
   async getCoinsMarkets(coinIds: string[]): Promise<CoinGeckoProject[]> {
     try {
-      const markets = await this.request<CoinGeckoProject[]>('/coins/markets', {
+      const markets = await this.request<CoinGeckoProject[]>('/api/v3/coins/markets', {
         vs_currency: 'usd',
         ids: coinIds.join(','),
         order: 'market_cap_desc',
