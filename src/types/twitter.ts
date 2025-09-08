@@ -1,4 +1,5 @@
 // 트위터 관련 타입 정의
+import { TwitterUserInfo } from '@/lib/twitter'
 
 // 데이터베이스 트위터 계정 테이블 타입
 export interface TwitterAccount {
