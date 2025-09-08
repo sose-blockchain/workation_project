@@ -35,8 +35,8 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
         </p>
         
         <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
-          <div className="text-sm text-gray-500 mb-1">CoinGecko Pro 구독 시</div>
-          <div className="text-lg font-semibold text-gray-900">월 $199</div>
+          <div className="text-sm text-gray-500 mb-1">CoinGecko Pro API 구독 시</div>
+          <div className="text-lg font-semibold text-gray-900">월 $129</div>
           <div className="text-sm text-gray-600 mt-1">
             실시간 투자 라운드 데이터, 밸류에이션, 투자자 정보
           </div>
@@ -44,7 +44,7 @@ export default function InvestmentManager({ projectId, onInvestmentsChange }: In
         
         <p className="text-sm text-gray-500 mb-4">
           정확하고 최신의 투자 라운드 정보가 필요하신 경우 
-          <span className="font-medium"> CoinGecko Pro </span>
+          <span className="font-medium"> CoinGecko Pro API </span>
           구독을 고려해주세요.
         </p>
         

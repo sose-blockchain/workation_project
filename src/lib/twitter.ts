@@ -283,28 +283,77 @@ class TwitterAPI {
 
       console.log(`✅ Twitter: ${screenname}의 타임라인 ${tweets.length}개 트윗 가져옴`);
 
-      return tweets.slice(0, count).map((tweet: any) => ({
-        id: String(tweet.id_str || tweet.id || `tweet_${Date.now()}_${Math.random()}`),
-        text: tweet.full_text || tweet.text || tweet.display_text || '',
-        created_at: tweet.created_at || new Date().toISOString(),
-        retweet_count: Number(tweet.retweet_count || tweet.retweets) || 0,
-        favorite_count: Number(tweet.favorite_count || tweet.likes) || 0,
-        reply_count: Number(tweet.reply_count || tweet.replies) || 0,
-        is_retweet: Boolean(tweet.retweeted_status || tweet.is_retweet),
-        user: {
-          id: String(tweet.user?.id_str || tweet.user?.id || tweet.author?.rest_id || ''),
-          name: tweet.user?.name || tweet.author?.name || 'Unknown',
-          screen_name: tweet.user?.screen_name || tweet.author?.screen_name || screenname,
-          description: tweet.user?.description || '',
-          profile_image_url: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || tweet.author?.image || '',
-          followers_count: Number(tweet.user?.followers_count || tweet.author?.sub_count) || 0,
-          friends_count: Number(tweet.user?.friends_count) || 0,
-          statuses_count: Number(tweet.user?.statuses_count) || 0,
-          favourites_count: Number(tweet.user?.favourites_count) || 0,
-          created_at: tweet.user?.created_at || new Date().toISOString(),
-          verified: Boolean(tweet.user?.verified || tweet.author?.blue_verified)
-        }
-      })).filter(tweet => tweet.id && tweet.text); // 유효한 트윗만 필터링
+      // 트윗을 생성 시간순으로 정렬 (최신순)
+      const sortedTweets = tweets.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA; // 최신순
+      });
+
+      return sortedTweets.slice(0, count).map((tweet: any) => {
+        // 트윗 데이터 매핑 개선
+        const tweetText = tweet.full_text || tweet.text || tweet.display_text || '';
+        const tweetId = String(tweet.id_str || tweet.id || `tweet_${Date.now()}_${Math.random()}`);
+        
+        // 참여도 데이터 개선
+        const likes = Number(tweet.favorite_count || tweet.likes || tweet.favourites_count) || 0;
+        const retweets = Number(tweet.retweet_count || tweet.retweets) || 0;
+        const replies = Number(tweet.reply_count || tweet.replies) || 0;
+        
+        // 리트윗 여부 판단 개선
+        const isRetweet = Boolean(
+          tweet.retweeted_status || 
+          tweet.is_retweet || 
+          tweetText.startsWith('RT @') ||
+          tweet.retweeted
+        );
+
+        console.log(`📊 트윗 매핑: ${tweetId.substring(0, 8)}... - 좋아요: ${likes}, 리트윗: ${retweets}, 답글: ${replies}`);
+
+        return {
+          id: tweetId,
+          text: tweetText,
+          created_at: tweet.created_at || new Date().toISOString(),
+          retweet_count: retweets,
+          favorite_count: likes,
+          is_retweet: isRetweet,
+          // 원본 트윗 정보 (리트윗인 경우)
+          retweeted_status: tweet.retweeted_status ? {
+            id: String(tweet.retweeted_status.id_str || tweet.retweeted_status.id || ''),
+            text: tweet.retweeted_status.full_text || tweet.retweeted_status.text || '',
+            created_at: tweet.retweeted_status.created_at || new Date().toISOString(),
+            retweet_count: Number(tweet.retweeted_status.retweet_count) || 0,
+            favorite_count: Number(tweet.retweeted_status.favorite_count) || 0,
+            is_retweet: false,
+            user: {
+              id: String(tweet.retweeted_status.user?.id_str || tweet.retweeted_status.user?.id || ''),
+              name: tweet.retweeted_status.user?.name || '',
+              screen_name: tweet.retweeted_status.user?.screen_name || '',
+              description: tweet.retweeted_status.user?.description || '',
+              profile_image_url: tweet.retweeted_status.user?.profile_image_url_https || tweet.retweeted_status.user?.profile_image_url || '',
+              followers_count: Number(tweet.retweeted_status.user?.followers_count) || 0,
+              friends_count: Number(tweet.retweeted_status.user?.friends_count) || 0,
+              statuses_count: Number(tweet.retweeted_status.user?.statuses_count) || 0,
+              favourites_count: Number(tweet.retweeted_status.user?.favourites_count) || 0,
+              created_at: tweet.retweeted_status.user?.created_at || new Date().toISOString(),
+              verified: Boolean(tweet.retweeted_status.user?.verified)
+            }
+          } : undefined,
+          user: {
+            id: String(tweet.user?.id_str || tweet.user?.id || tweet.author?.rest_id || ''),
+            name: tweet.user?.name || tweet.author?.name || 'Unknown',
+            screen_name: tweet.user?.screen_name || tweet.author?.screen_name || screenname,
+            description: tweet.user?.description || '',
+            profile_image_url: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || tweet.author?.image || '',
+            followers_count: Number(tweet.user?.followers_count || tweet.author?.sub_count) || 0,
+            friends_count: Number(tweet.user?.friends_count) || 0,
+            statuses_count: Number(tweet.user?.statuses_count) || 0,
+            favourites_count: Number(tweet.user?.favourites_count) || 0,
+            created_at: tweet.user?.created_at || new Date().toISOString(),
+            verified: Boolean(tweet.user?.verified || tweet.author?.blue_verified)
+          }
+        };
+      }).filter(tweet => tweet.id && tweet.text); // 유효한 트윗만 필터링
     } catch (error) {
       console.error(`❌ Twitter Timeline API 오류 (${screenname}):`, error);
       return [];

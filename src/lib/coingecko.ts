@@ -28,20 +28,22 @@ interface CoinGeckoResponse<T> {
 
 class CoinGeckoAPI {
   private apiKey: string;
-  private apiHost: string;
   private baseUrl: string;
+  private isPro: boolean;
 
   constructor() {
-    // Twitter API와 동일한 RapidAPI 키 사용
-    this.apiKey = process.env.NEXT_PUBLIC_TWITTER_API_KEY || '';
-    this.apiHost = process.env.NEXT_PUBLIC_COINGECKO_API_HOST || 'coingecko-api-without-rate-limit.p.rapidapi.com';
-    this.baseUrl = `https://${this.apiHost}`;
+    // CoinGecko 공식 API 키 사용
+    this.apiKey = process.env.NEXT_PUBLIC_COINGECKO_API_KEY || '';
+    this.baseUrl = 'https://api.coingecko.com/api/v3';
+    this.isPro = !!process.env.NEXT_PUBLIC_COINGECKO_PRO_API_KEY;
     
-    if (!this.apiKey) {
-      console.warn('⚠️ NEXT_PUBLIC_TWITTER_API_KEY가 설정되지 않았습니다. (CoinGecko API 키로 사용)');
-    }
-    if (!process.env.NEXT_PUBLIC_COINGECKO_API_HOST) {
-      console.warn('⚠️ NEXT_PUBLIC_COINGECKO_API_HOST가 설정되지 않았습니다. 기본값 사용: coingecko-api-without-rate-limit.p.rapidapi.com');
+    if (this.isPro) {
+      this.apiKey = process.env.NEXT_PUBLIC_COINGECKO_PRO_API_KEY || '';
+      console.log('🦎 CoinGecko Pro API 사용 중');
+    } else if (this.apiKey) {
+      console.log('🦎 CoinGecko Demo API 사용 중');
+    } else {
+      console.warn('⚠️ CoinGecko API 키가 설정되지 않았습니다. Public API(제한된 기능) 사용');
     }
   }
 
@@ -56,14 +58,24 @@ class CoinGeckoAPI {
       });
     }
 
-    console.log(`🦎 CoinGecko API 호출: ${endpoint}`, params || {});
+    console.log(`🦎 CoinGecko 공식 API 호출: ${endpoint}`, params || {});
+
+    const headers: HeadersInit = {
+      'Accept': 'application/json',
+    };
+
+    // API 키가 있는 경우 헤더에 추가
+    if (this.apiKey) {
+      if (this.isPro) {
+        headers['x-cg-pro-api-key'] = this.apiKey;
+      } else {
+        headers['x-cg-demo-api-key'] = this.apiKey;
+      }
+    }
 
     const response = await fetch(url.toString(), {
-      headers: {
-        'X-RapidAPI-Key': this.apiKey,
-        'X-RapidAPI-Host': this.apiHost,
-        'Content-Type': 'application/json',
-      },
+      method: 'GET',
+      headers
     });
 
     if (!response.ok) {
@@ -76,7 +88,7 @@ class CoinGeckoAPI {
 
   // 프로젝트 검색 (search endpoint 사용)
   async searchProjects(query: string): Promise<CoinGeckoSearchResult> {
-    return this.request<CoinGeckoSearchResult>('/api/v3/search', { query });
+    return this.request<CoinGeckoSearchResult>('/search', { query });
   }
 
   // 마켓 데이터 가져오기 (개선된 방법)
@@ -107,7 +119,7 @@ class CoinGeckoAPI {
         ...options
       };
 
-      const markets = await this.request<CoinGeckoProject[]>('/api/v3/coins/markets', params);
+      const markets = await this.request<CoinGeckoProject[]>('/coins/markets', params);
       
       console.log(`✅ CoinGecko 마켓 데이터 ${markets?.length || 0}개 조회 완료`);
       return markets || [];
@@ -178,7 +190,7 @@ class CoinGeckoAPI {
   // 특정 코인 정보 가져오기
   async getCoinById(coinId: string): Promise<CoinGeckoProject | null> {
     try {
-      const coinData = await this.request<CoinGeckoProject>(`/api/v3/coins/${coinId}`, {
+      const coinData = await this.request<CoinGeckoProject>(`/coins/${coinId}`, {
         localization: false,
         tickers: false,
         market_data: true,
@@ -197,7 +209,7 @@ class CoinGeckoAPI {
   // 코인 목록으로 기본 정보 가져오기 (더 빠름)
   async getCoinsMarkets(coinIds: string[]): Promise<CoinGeckoProject[]> {
     try {
-      const markets = await this.request<CoinGeckoProject[]>('/api/v3/coins/markets', {
+      const markets = await this.request<CoinGeckoProject[]>('/coins/markets', {
         vs_currency: 'usd',
         ids: coinIds.join(','),
         order: 'market_cap_desc',
@@ -474,7 +486,7 @@ if (typeof window !== 'undefined') {
     console.log('🏁 여러 프로젝트 테스트 완료');
   };
 
-  console.log('🦎 CoinGecko 테스트 함수 준비 완료:');
+  console.log('🦎 CoinGecko 공식 API 테스트 함수 준비 완료:');
   console.log('- testCoinGeckoMarketData() : 마켓 데이터 상위 10개 조회');
   console.log('- testCoinGeckoSearch("프로젝트명") : 특정 프로젝트 검색');
   console.log('- testMultipleProjects() : 여러 프로젝트 일괄 테스트');
