@@ -56,17 +56,17 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
       console.log(`📊 유사도 검사: ${searchSimilarity}%`);
 
       // 유사도가 70% 이상일 때만 CoinGecko 정보 사용
-      if (searchSimilarity >= 70) {
-        finalProject = {
-          ...aiResult.project,
-          name: coinGeckoProject.name,
-          token_symbol: coinGeckoProject.symbol,
-          market_cap_rank: coinGeckoProject.market_cap_rank,
-          // TODO: 스키마 업데이트 후 활성화
-          // current_price: coinGeckoProject.current_price,
-          // market_cap: coinGeckoProject.market_cap,
-          // price_change_24h: coinGeckoProject.price_change_percentage_24h
-        };
+        if (searchSimilarity >= 70) {
+          finalProject = {
+            ...aiResult.project,
+            name: coinGeckoProject.name,
+            token_symbol: coinGeckoProject.symbol,
+            // ✅ 스키마 업데이트 완료 - CoinGecko 필드 활성화
+            market_cap_rank: coinGeckoProject.market_cap_rank,
+            current_price: coinGeckoProject.current_price,
+            market_cap: coinGeckoProject.market_cap,
+            price_change_24h: coinGeckoProject.price_change_percentage_24h
+          };
         basicInfoSource = 'CoinGecko API + Gemini AI';
         console.log(`✅ CoinGecko 정보 적용: ${coinGeckoProject.name} (${coinGeckoProject.symbol}) - 순위: ${coinGeckoProject.market_cap_rank || 'N/A'}`);
       } else {
