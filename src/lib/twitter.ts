@@ -279,6 +279,145 @@ class TwitterAPI {
   }
 
   /**
+   * 팔로잉 목록 조회 (팀원들이 서로 팔로우하는 경우)
+   */
+  async getFollowing(screenname: string): Promise<TwitterUserInfo[]> {
+    try {
+      console.log(`🔍 Twitter Following API 호출: /following.php?screenname=${screenname}`);
+      
+      const data = await this.makeRequest(`/following.php?screenname=${screenname}`);
+      
+      console.log('🔍 Twitter Following API 응답:', {
+        hasData: !!data,
+        isArray: Array.isArray(data),
+        length: Array.isArray(data) ? data.length : 0
+      });
+      
+      if (!data || !Array.isArray(data)) {
+        console.log(`❌ Twitter: '${screenname}'의 팔로잉 목록을 가져올 수 없습니다.`);
+        return [];
+      }
+
+      console.log(`✅ Twitter: ${screenname}의 팔로잉 ${data.length}명 가져옴`);
+
+      return data.map((user: any) => ({
+        id: String(user.id_str || user.id || `user_${Date.now()}_${Math.random()}`),
+        name: user.name || 'Unknown User',
+        screen_name: user.screen_name || user.username || '',
+        description: user.description || '',
+        profile_image_url: user.profile_image_url_https || user.profile_image_url || '',
+        followers_count: Number(user.followers_count) || 0,
+        friends_count: Number(user.friends_count) || 0,
+        statuses_count: Number(user.statuses_count) || 0,
+        favourites_count: Number(user.favourites_count) || 0,
+        created_at: user.created_at || new Date().toISOString(),
+        verified: Boolean(user.verified),
+        location: user.location || null,
+        url: user.url || null
+      })).filter(user => user.screen_name); // 유효한 사용자만 필터링
+    } catch (error) {
+      console.error(`❌ Twitter Following API 오류 (${screenname}):`, error);
+      return [];
+    }
+  }
+
+  /**
+   * 제휴사/관련 계정 정보 조회 (팀원 정보 포함 가능)
+   */
+  async getAffiliates(screenname: string): Promise<TwitterUserInfo[]> {
+    try {
+      console.log(`🔍 Twitter Affiliates API 호출: /affilates.php?screenname=${screenname}`);
+      
+      const data = await this.makeRequest(`/affilates.php?screenname=${screenname}`);
+      
+      console.log('🔍 Twitter Affiliates API 응답:', {
+        hasData: !!data,
+        isArray: Array.isArray(data),
+        length: Array.isArray(data) ? data.length : 0
+      });
+      
+      if (!data || !Array.isArray(data)) {
+        console.log(`❌ Twitter: '${screenname}'의 제휴사 정보를 가져올 수 없습니다.`);
+        return [];
+      }
+
+      console.log(`✅ Twitter: ${screenname}의 제휴사 ${data.length}개 가져옴`);
+
+      return data.map((user: any) => ({
+        id: String(user.id_str || user.id || `affiliate_${Date.now()}_${Math.random()}`),
+        name: user.name || 'Unknown User',
+        screen_name: user.screen_name || user.username || '',
+        description: user.description || '',
+        profile_image_url: user.profile_image_url_https || user.profile_image_url || '',
+        followers_count: Number(user.followers_count) || 0,
+        friends_count: Number(user.friends_count) || 0,
+        statuses_count: Number(user.statuses_count) || 0,
+        favourites_count: Number(user.favourites_count) || 0,
+        created_at: user.created_at || new Date().toISOString(),
+        verified: Boolean(user.verified),
+        location: user.location || null,
+        url: user.url || null
+      })).filter(user => user.screen_name); // 유효한 사용자만 필터링
+    } catch (error) {
+      console.error(`❌ Twitter Affiliates API 오류 (${screenname}):`, error);
+      return [];
+    }
+  }
+
+  /**
+   * 팀원 정보 종합 수집 (팔로잉 + 제휴사)
+   */
+  async getTeamMembers(screenname: string): Promise<{
+    following: TwitterUserInfo[];
+    affiliates: TwitterUserInfo[];
+    combined: TwitterUserInfo[];
+  }> {
+    try {
+      console.log(`🔍 팀원 정보 수집 시작: @${screenname}`);
+      
+      // 팔로잉과 제휴사 정보를 병렬로 수집
+      const [following, affiliates] = await Promise.all([
+        this.getFollowing(screenname),
+        this.getAffiliates(screenname)
+      ]);
+
+      // 중복 제거하여 통합 목록 생성
+      const combinedMap = new Map<string, TwitterUserInfo>();
+      
+      // 팔로잉 목록 추가
+      following.forEach(user => {
+        if (user.screen_name) {
+          combinedMap.set(user.screen_name.toLowerCase(), user);
+        }
+      });
+      
+      // 제휴사 목록 추가 (중복 시 제휴사 정보 우선)
+      affiliates.forEach(user => {
+        if (user.screen_name) {
+          combinedMap.set(user.screen_name.toLowerCase(), user);
+        }
+      });
+
+      const combined = Array.from(combinedMap.values());
+
+      console.log(`✅ 팀원 정보 수집 완료: 팔로잉 ${following.length}명, 제휴사 ${affiliates.length}개, 통합 ${combined.length}명`);
+
+      return {
+        following,
+        affiliates,
+        combined
+      };
+    } catch (error) {
+      console.error(`❌ 팀원 정보 수집 오류 (${screenname}):`, error);
+      return {
+        following: [],
+        affiliates: [],
+        combined: []
+      };
+    }
+  }
+
+  /**
    * 트위터 핸들에서 @ 제거 및 정규화
    */
   static normalizeTwitterHandle(handle: string): string {
@@ -348,6 +487,40 @@ export async function testSuiNetworkAPI(): Promise<void> {
 // 브라우저에서 직접 테스트할 수 있도록 전역 함수로 노출
 if (typeof window !== 'undefined') {
   (window as any).testSuiNetworkAPI = testSuiNetworkAPI;
+  (window as any).testTeamMembersAPI = async (screenName: string) => {
+    console.log(`🧪 팀원 정보 API 테스트 시작: @${screenName}`);
+    
+    try {
+      const result = await twitterAPI.getTeamMembers(screenName);
+      console.log('🎯 팀원 정보 테스트 결과:', {
+        success: true,
+        following: result.following.length,
+        affiliates: result.affiliates.length,
+        combined: result.combined.length,
+        sample_following: result.following.slice(0, 3).map(u => ({
+          name: u.name,
+          screen_name: u.screen_name,
+          followers_count: u.followers_count,
+          verified: u.verified
+        })),
+        sample_affiliates: result.affiliates.slice(0, 3).map(u => ({
+          name: u.name,
+          screen_name: u.screen_name,
+          followers_count: u.followers_count,
+          verified: u.verified
+        }))
+      });
+      
+      if (result.combined.length > 0) {
+        console.log('✅ 팀원 정보 수집 성공!');
+        console.log('📋 전체 데이터:', result);
+      } else {
+        console.log('📭 팀원 정보 없음');
+      }
+    } catch (error) {
+      console.error('💥 팀원 정보 API 테스트 오류:', error);
+    }
+  };
 }
 
 // 트위터 핸들 추출 함수 (대소문자 보존)

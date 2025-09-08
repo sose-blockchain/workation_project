@@ -7,7 +7,11 @@ import {
   CreateTwitterAccountRequest, 
   UpdateTwitterAccountRequest,
   TwitterSearchResult,
-  TwitterProjectOverview
+  TwitterProjectOverview,
+  TwitterTeamMember,
+  TwitterTeamMembersResult,
+  TwitterTeamOverview,
+  TwitterTeamMemberDetail
 } from '@/types/twitter';
 import { AppErrorHandler, SupabaseError } from '@/types/error';
 
@@ -476,6 +480,286 @@ export class TwitterService {
     } catch (error) {
       console.error('트위터 계정 존재 확인 오류:', error);
       return false;
+    }
+  }
+
+  /**
+   * 프로젝트의 팀원 정보 수집 및 저장
+   */
+  async collectAndSaveTeamMembers(projectId: string, twitterAccountId: string, screenName: string): Promise<TwitterTeamMembersResult> {
+    try {
+      console.log(`🔍 팀원 정보 수집 시작: project_id=${projectId}, @${screenName}`);
+      
+      // 1. Twitter API에서 팀원 정보 수집
+      const teamData = await twitterAPI.getTeamMembers(screenName);
+      
+      if (teamData.combined.length === 0) {
+        console.log(`📭 팀원 정보 없음: @${screenName}`);
+        return {
+          following: [],
+          affiliates: [],
+          combined: [],
+          saved_members: [],
+          success: true
+        };
+      }
+
+      // 2. 수집된 팀원 정보를 데이터베이스에 저장
+      const savedMembers = await this.saveTeamMembers(projectId, twitterAccountId, teamData);
+      
+      console.log(`✅ 팀원 정보 수집 완료: ${savedMembers.length}명 저장`);
+
+      return {
+        following: teamData.following,
+        affiliates: teamData.affiliates,
+        combined: teamData.combined,
+        saved_members: savedMembers,
+        success: true
+      };
+
+    } catch (error: any) {
+      console.error('❌ 팀원 정보 수집 오류:', error);
+      return {
+        following: [],
+        affiliates: [],
+        combined: [],
+        saved_members: [],
+        error: error.message,
+        success: false
+      };
+    }
+  }
+
+  /**
+   * 팀원 정보를 데이터베이스에 저장
+   */
+  private async saveTeamMembers(
+    projectId: string, 
+    twitterAccountId: string, 
+    teamData: { following: TwitterUserInfo[]; affiliates: TwitterUserInfo[]; combined: TwitterUserInfo[] }
+  ): Promise<TwitterTeamMember[]> {
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
+
+    try {
+      // 기존 팀원 정보 삭제 (최신 데이터로 교체)
+      await supabase
+        .from('twitter_team_members')
+        .delete()
+        .eq('project_id', projectId);
+
+      const savedMembers: TwitterTeamMember[] = [];
+
+      // 팔로잉 목록 저장
+      for (const user of teamData.following) {
+        const memberData = {
+          project_id: projectId,
+          twitter_account_id: twitterAccountId,
+          twitter_id: user.id,
+          screen_name: user.screen_name,
+          name: user.name,
+          description: user.description || null,
+          profile_image_url: user.profile_image_url || null,
+          followers_count: user.followers_count,
+          friends_count: user.friends_count,
+          statuses_count: user.statuses_count,
+          favourites_count: user.favourites_count,
+          verified: user.verified,
+          location: user.location || null,
+          url: user.url || null,
+          created_at: user.created_at,
+          relationship_type: 'following' as const,
+          is_team_member: this.isLikelyTeamMember(user),
+          confidence_score: this.calculateTeamMemberConfidence(user, 'following'),
+          last_updated: new Date().toISOString(),
+          data_source: 'twitter_api'
+        };
+
+        const { data, error } = await supabase
+          .from('twitter_team_members')
+          .insert(memberData)
+          .select()
+          .single();
+
+        if (error) {
+          console.error(`팀원 저장 오류 (${user.screen_name}):`, error);
+          continue;
+        }
+
+        savedMembers.push(data as TwitterTeamMember);
+      }
+
+      // 제휴사 목록 저장 (중복 제거)
+      for (const user of teamData.affiliates) {
+        // 이미 팔로잉으로 저장된 경우 관계 타입을 'both'로 업데이트
+        const existingMember = savedMembers.find(m => m.screen_name === user.screen_name);
+        
+        if (existingMember) {
+          const { error } = await supabase
+            .from('twitter_team_members')
+            .update({ 
+              relationship_type: 'both',
+              confidence_score: this.calculateTeamMemberConfidence(user, 'both')
+            })
+            .eq('id', existingMember.id);
+
+          if (error) {
+            console.error(`팀원 관계 업데이트 오류 (${user.screen_name}):`, error);
+          }
+          continue;
+        }
+
+        // 새로운 제휴사 저장
+        const memberData = {
+          project_id: projectId,
+          twitter_account_id: twitterAccountId,
+          twitter_id: user.id,
+          screen_name: user.screen_name,
+          name: user.name,
+          description: user.description || null,
+          profile_image_url: user.profile_image_url || null,
+          followers_count: user.followers_count,
+          friends_count: user.friends_count,
+          statuses_count: user.statuses_count,
+          favourites_count: user.favourites_count,
+          verified: user.verified,
+          location: user.location || null,
+          url: user.url || null,
+          created_at: user.created_at,
+          relationship_type: 'affiliate' as const,
+          is_team_member: this.isLikelyTeamMember(user),
+          confidence_score: this.calculateTeamMemberConfidence(user, 'affiliate'),
+          last_updated: new Date().toISOString(),
+          data_source: 'twitter_api'
+        };
+
+        const { data, error } = await supabase
+          .from('twitter_team_members')
+          .insert(memberData)
+          .select()
+          .single();
+
+        if (error) {
+          console.error(`제휴사 저장 오류 (${user.screen_name}):`, error);
+          continue;
+        }
+
+        savedMembers.push(data as TwitterTeamMember);
+      }
+
+      return savedMembers;
+
+    } catch (error) {
+      console.error('팀원 정보 저장 오류:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 사용자가 팀원일 가능성 판단
+   */
+  private isLikelyTeamMember(user: TwitterUserInfo): boolean {
+    // 간단한 휴리스틱으로 팀원 가능성 판단
+    const indicators = [
+      user.verified, // 인증된 계정
+      user.followers_count > 1000, // 팔로워가 많은 계정
+      user.description?.toLowerCase().includes('founder') || 
+      user.description?.toLowerCase().includes('ceo') ||
+      user.description?.toLowerCase().includes('cto') ||
+      user.description?.toLowerCase().includes('developer') ||
+      user.description?.toLowerCase().includes('engineer'),
+      user.statuses_count > 100 // 활발한 트윗 활동
+    ];
+
+    const score = indicators.filter(Boolean).length;
+    return score >= 2; // 2개 이상의 지표가 있으면 팀원으로 판단
+  }
+
+  /**
+   * 팀원 확신도 계산 (0.0-1.0)
+   */
+  private calculateTeamMemberConfidence(user: TwitterUserInfo, relationshipType: string): number {
+    let confidence = 0.0;
+
+    // 인증된 계정
+    if (user.verified) confidence += 0.3;
+
+    // 팔로워 수 (로그 스케일)
+    if (user.followers_count > 10000) confidence += 0.2;
+    else if (user.followers_count > 1000) confidence += 0.1;
+
+    // 설명에 직책 키워드 포함
+    const description = user.description?.toLowerCase() || '';
+    const roleKeywords = ['founder', 'ceo', 'cto', 'developer', 'engineer', 'co-founder'];
+    if (roleKeywords.some(keyword => description.includes(keyword))) {
+      confidence += 0.2;
+    }
+
+    // 활발한 활동
+    if (user.statuses_count > 500) confidence += 0.1;
+    else if (user.statuses_count > 100) confidence += 0.05;
+
+    // 관계 타입별 가중치
+    if (relationshipType === 'affiliate') confidence += 0.1;
+    else if (relationshipType === 'both') confidence += 0.15;
+
+    return Math.min(confidence, 1.0);
+  }
+
+  /**
+   * 프로젝트의 팀원 목록 조회
+   */
+  async getTeamMembers(projectId: string): Promise<TwitterTeamMemberDetail[]> {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('twitter_team_members_detail')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('followers_count', { ascending: false });
+
+      if (error) {
+        console.error('팀원 목록 조회 오류:', error);
+        return [];
+      }
+
+      return data as TwitterTeamMemberDetail[];
+    } catch (error) {
+      console.error('팀원 목록 조회 오류:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 팀원 개요 정보 조회
+   */
+  async getTeamOverview(projectId: string): Promise<TwitterTeamOverview | null> {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('twitter_team_overview')
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+      if (error) {
+        console.error('팀원 개요 조회 오류:', error);
+        return null;
+      }
+
+      return data as TwitterTeamOverview;
+    } catch (error) {
+      console.error('팀원 개요 조회 오류:', error);
+      return null;
     }
   }
 }

@@ -195,3 +195,102 @@ export interface TwitterStatsSummary {
     followers_growth_30d: number;
   };
 }
+
+// 트위터 팀원 정보 타입
+export interface TwitterTeamMember {
+  id: string;
+  project_id: string;
+  twitter_account_id: string;
+  
+  // 팀원 기본 정보
+  twitter_id: string;
+  screen_name: string;
+  name: string;
+  description?: string;
+  
+  // 프로필 이미지
+  profile_image_url?: string;
+  
+  // 통계 정보
+  followers_count: number;
+  friends_count: number;
+  statuses_count: number;
+  favourites_count: number;
+  
+  // 계정 정보
+  verified: boolean;
+  location?: string;
+  url?: string;
+  created_at: string; // 트위터 가입일
+  
+  // 팀원 관계 정보
+  relationship_type: 'following' | 'affiliate' | 'both';
+  is_team_member: boolean;
+  confidence_score: number; // 0.0-1.0
+  
+  // 메타데이터
+  last_updated: string;
+  data_source: string;
+  
+  // DB 메타데이터
+  created_at_db: string;
+  updated_at: string;
+}
+
+// 팀원 활동 분석 타입
+export interface TwitterTeamActivity {
+  id: string;
+  team_member_id: string;
+  
+  // 활동 분석 데이터
+  analysis_date: string;
+  posts_last_7d: number;
+  posts_last_30d: number;
+  avg_engagement_rate: number;
+  mentions_project_count: number;
+  
+  // 성장 지표
+  followers_growth_7d: number;
+  followers_growth_30d: number;
+  
+  created_at: string;
+}
+
+// 팀원 정보 수집 결과 타입
+export interface TwitterTeamMembersResult {
+  following: TwitterUserInfo[];
+  affiliates: TwitterUserInfo[];
+  combined: TwitterUserInfo[];
+  saved_members: TwitterTeamMember[];
+  error?: string;
+  success: boolean;
+}
+
+// 팀원 개요 타입
+export interface TwitterTeamOverview {
+  project_id: string;
+  project_name: string;
+  token_symbol?: string;
+  main_twitter_handle?: string;
+  main_twitter_name?: string;
+  main_followers_count?: number;
+  total_team_members: number;
+  verified_team_members: number;
+  affiliate_members: number;
+  following_members: number;
+  avg_team_followers: number;
+  last_team_update?: string;
+}
+
+// 팀원 상세 정보 타입
+export interface TwitterTeamMemberDetail extends TwitterTeamMember {
+  project_name: string;
+  token_symbol?: string;
+  main_twitter_handle?: string;
+  main_twitter_name?: string;
+  posts_last_7d?: number;
+  posts_last_30d?: number;
+  avg_engagement_rate?: number;
+  followers_growth_7d?: number;
+  followers_growth_30d?: number;
+}

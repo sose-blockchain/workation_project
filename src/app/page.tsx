@@ -130,6 +130,27 @@ export default function HomePage() {
               successfulAccount = { handle, account: twitterResult.account };
               twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
               console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
+              
+              // 팀원 정보도 함께 수집
+              try {
+                console.log(`🔍 팀원 정보 수집 시작: @${handle}`);
+                const teamResult = await twitterService.collectAndSaveTeamMembers(
+                  newProject.id,
+                  twitterResult.account.id,
+                  handle
+                );
+                
+                if (teamResult.success && teamResult.saved_members.length > 0) {
+                  twitterMessage += ` (팀원 ${teamResult.saved_members.length}명 수집 완료)`;
+                  console.log(`✅ 팀원 정보 수집 성공: ${teamResult.saved_members.length}명`);
+                } else {
+                  console.log(`📭 팀원 정보 없음 또는 수집 실패: @${handle}`);
+                }
+              } catch (teamError) {
+                console.error(`❌ 팀원 정보 수집 중 오류: @${handle}`, teamError);
+                // 팀원 정보 수집 실패는 전체 프로세스를 중단시키지 않음
+              }
+              
               break; // 성공하면 루프 종료
             } else {
               console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
@@ -159,6 +180,26 @@ export default function HomePage() {
             if (twitterResult.found && twitterResult.account) {
               twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
               console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
+              
+              // 팀원 정보도 함께 수집
+              try {
+                console.log(`🔍 팀원 정보 수집 시작: @${handle}`);
+                const teamResult = await twitterService.collectAndSaveTeamMembers(
+                  newProject.id,
+                  twitterResult.account.id,
+                  handle
+                );
+                
+                if (teamResult.success && teamResult.saved_members.length > 0) {
+                  twitterMessage += ` (팀원 ${teamResult.saved_members.length}명 수집 완료)`;
+                  console.log(`✅ 팀원 정보 수집 성공: ${teamResult.saved_members.length}명`);
+                } else {
+                  console.log(`📭 팀원 정보 없음 또는 수집 실패: @${handle}`);
+                }
+              } catch (teamError) {
+                console.error(`❌ 팀원 정보 수집 중 오류: @${handle}`, teamError);
+                // 팀원 정보 수집 실패는 전체 프로세스를 중단시키지 않음
+              }
             } else {
               console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
             }
