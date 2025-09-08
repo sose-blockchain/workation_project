@@ -62,9 +62,10 @@ export async function getEnhancedProjectInfo(projectName: string): Promise<Enhan
           name: coinGeckoProject.name,
           token_symbol: coinGeckoProject.symbol,
           market_cap_rank: coinGeckoProject.market_cap_rank,
-          current_price: coinGeckoProject.current_price,
-          market_cap: coinGeckoProject.market_cap,
-          price_change_24h: coinGeckoProject.price_change_percentage_24h
+          // TODO: 스키마 업데이트 후 활성화
+          // current_price: coinGeckoProject.current_price,
+          // market_cap: coinGeckoProject.market_cap,
+          // price_change_24h: coinGeckoProject.price_change_percentage_24h
         };
         basicInfoSource = 'CoinGecko API + Gemini AI';
         console.log(`✅ CoinGecko 정보 적용: ${coinGeckoProject.name} (${coinGeckoProject.symbol}) - 순위: ${coinGeckoProject.market_cap_rank || 'N/A'}`);
