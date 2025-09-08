@@ -237,15 +237,21 @@ class TwitterAPI {
   async getUserTimeline(screenname: string, count: number = 10): Promise<TwitterTimelineItem[]> {
     try {
       // 가이드에 따른 정확한 엔드포인트 사용
-      console.log(`🔍 Twitter Timeline API 호출: /timeline.php?screenname=${screenname}`);
+      console.log(`🔍 Twitter Timeline API 호출: /timeline.php?screenname=${screenname}&count=${count}`);
       
-      const data = await this.makeRequest(`/timeline.php?screenname=${screenname}`);
+      const data = await this.makeRequest(`/timeline.php?screenname=${screenname}&count=${count}`);
       
       console.log('🔍 Twitter Timeline API 응답:', {
         hasData: !!data,
         isArray: Array.isArray(data),
         length: Array.isArray(data) ? data.length : 0,
-        firstItem: Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : null
+        dataType: typeof data,
+        keys: data && typeof data === 'object' ? Object.keys(data) : null,
+        firstItem: Array.isArray(data) && data.length > 0 ? {
+          hasText: !!data[0].text,
+          hasCreatedAt: !!data[0].created_at,
+          keys: Object.keys(data[0])
+        } : null
       });
       
       // API 오류 또는 빈 응답 처리
@@ -254,11 +260,24 @@ class TwitterAPI {
         return [];
       }
 
-      // 응답이 배열이 아닌 경우 처리
-      let tweets = Array.isArray(data) ? data : (data.data || []);
+      // 응답이 배열이 아닌 경우 처리 - 더 많은 필드 확인
+      let tweets: any[] = [];
       
-      if (!Array.isArray(tweets)) {
-        console.log(`⚠️ Twitter: 타임라인 응답이 예상된 형식이 아닙니다.`, typeof tweets);
+      if (Array.isArray(data)) {
+        tweets = data;
+      } else if (data && typeof data === 'object') {
+        // 다양한 가능한 배열 필드 확인
+        tweets = data.data || data.timeline || data.tweets || data.results || data.items || [];
+        
+        if (!Array.isArray(tweets)) {
+          console.warn(`⚠️ Twitter: 타임라인 응답에서 배열을 찾을 수 없습니다.`, {
+            availableKeys: Object.keys(data),
+            tweetsType: typeof tweets
+          });
+          return [];
+        }
+      } else {
+        console.log(`⚠️ Twitter: 타임라인 응답이 예상된 형식이 아닙니다.`, typeof data);
         return [];
       }
 
@@ -266,22 +285,24 @@ class TwitterAPI {
 
       return tweets.slice(0, count).map((tweet: any) => ({
         id: String(tweet.id_str || tweet.id || `tweet_${Date.now()}_${Math.random()}`),
-        text: tweet.full_text || tweet.text || '',
+        text: tweet.full_text || tweet.text || tweet.display_text || '',
         created_at: tweet.created_at || new Date().toISOString(),
-        retweet_count: Number(tweet.retweet_count) || 0,
-        favorite_count: Number(tweet.favorite_count) || 0,
+        retweet_count: Number(tweet.retweet_count || tweet.retweets) || 0,
+        favorite_count: Number(tweet.favorite_count || tweet.likes) || 0,
+        reply_count: Number(tweet.reply_count || tweet.replies) || 0,
+        is_retweet: Boolean(tweet.retweeted_status || tweet.is_retweet),
         user: {
-          id: String(tweet.user?.id_str || tweet.user?.id || ''),
-          name: tweet.user?.name || 'Unknown',
-          screen_name: tweet.user?.screen_name || screenname,
+          id: String(tweet.user?.id_str || tweet.user?.id || tweet.author?.rest_id || ''),
+          name: tweet.user?.name || tweet.author?.name || 'Unknown',
+          screen_name: tweet.user?.screen_name || tweet.author?.screen_name || screenname,
           description: tweet.user?.description || '',
-          profile_image_url: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || '',
-          followers_count: Number(tweet.user?.followers_count) || 0,
+          profile_image_url: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || tweet.author?.image || '',
+          followers_count: Number(tweet.user?.followers_count || tweet.author?.sub_count) || 0,
           friends_count: Number(tweet.user?.friends_count) || 0,
           statuses_count: Number(tweet.user?.statuses_count) || 0,
           favourites_count: Number(tweet.user?.favourites_count) || 0,
           created_at: tweet.user?.created_at || new Date().toISOString(),
-          verified: Boolean(tweet.user?.verified)
+          verified: Boolean(tweet.user?.verified || tweet.author?.blue_verified)
         }
       })).filter(tweet => tweet.id && tweet.text); // 유효한 트윗만 필터링
     } catch (error) {
@@ -663,4 +684,77 @@ export function calculateTwitterActivityScore(userInfo: TwitterUserInfo, timelin
   ].filter(Boolean).length * 2.5; // 최대 10점
   
   return Math.round(followerScore + activityScore + recentActivity + engagementScore + profileScore);
+}
+
+// 브라우저 테스트 함수들
+if (typeof window !== 'undefined') {
+  // Timeline 테스트 함수
+  (window as any).testTimelineAPI = async (screenName: string) => {
+    console.log(`🧪 Timeline API 테스트: ${screenName}`);
+    try {
+      const timeline = await twitterAPI.getUserTimeline(screenName, 20);
+      
+      console.log('✅ Timeline 테스트 결과:', {
+        totalTweets: timeline.length,
+        sampleTweets: timeline.slice(0, 3).map(tweet => ({
+          id: tweet.id,
+          text: tweet.text.substring(0, 100) + '...',
+          created_at: tweet.created_at,
+          retweet_count: tweet.retweet_count,
+          favorite_count: tweet.favorite_count,
+          is_retweet: tweet.is_retweet
+        }))
+      });
+      
+      return timeline;
+    } catch (error) {
+      console.error('❌ Timeline 테스트 실패:', error);
+      return null;
+    }
+  };
+
+  // 월별 활동 분석 테스트
+  (window as any).testMonthlyAnalysis = async (screenName: string) => {
+    console.log(`📊 월별 활동 분석 테스트: ${screenName}`);
+    try {
+      const timeline = await twitterAPI.getUserTimeline(screenName, 50);
+      
+      if (timeline.length === 0) {
+        console.log('❌ 타임라인이 비어있습니다.');
+        return null;
+      }
+
+      // 월별 그룹화
+      const monthlyGroups: { [key: string]: typeof timeline } = {};
+      
+      timeline.forEach(tweet => {
+        const date = new Date(tweet.created_at);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (!monthlyGroups[monthKey]) {
+          monthlyGroups[monthKey] = [];
+        }
+        monthlyGroups[monthKey].push(tweet);
+      });
+
+      const monthlyStats = Object.entries(monthlyGroups).map(([month, tweets]) => ({
+        month,
+        totalTweets: tweets.length,
+        originalTweets: tweets.filter(t => !t.is_retweet).length,
+        retweets: tweets.filter(t => t.is_retweet).length,
+        totalLikes: tweets.reduce((sum, t) => sum + t.favorite_count, 0),
+        totalRetweets: tweets.reduce((sum, t) => sum + t.retweet_count, 0)
+      }));
+
+      console.log('✅ 월별 분석 결과:', monthlyStats);
+      return monthlyStats;
+    } catch (error) {
+      console.error('❌ 월별 분석 테스트 실패:', error);
+      return null;
+    }
+  };
+
+  console.log('🐦 Twitter API 테스트 함수 추가:');
+  console.log('- testTimelineAPI("screenName") : 타임라인 API 테스트');
+  console.log('- testMonthlyAnalysis("screenName") : 월별 활동 분석 테스트');
 }
