@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ProjectSearch from '@/components/ProjectSearch'
 import ProjectDetail from '@/components/ProjectDetail'
 import ProjectSidebar from '@/components/ProjectSidebar'
@@ -11,6 +12,7 @@ import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
 import { twitterService, TwitterService } from '@/lib/twitterService'
 
 export default function HomePage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [message, setMessage] = useState('')
@@ -359,7 +361,7 @@ ORDER BY month DESC;
           <div className="flex items-center space-x-3">
             {/* 관리자 대시보드 링크 */}
             <button
-              onClick={() => window.location.href = '/admin'}
+              onClick={() => router.push('/admin')}
               className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <span className="mr-1">⚙️</span>
@@ -367,7 +369,7 @@ ORDER BY month DESC;
             </button>
             
             <button 
-              onClick={() => window.location.href = '/'}
+              onClick={() => router.push('/')}
               className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

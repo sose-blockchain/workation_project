@@ -183,6 +183,13 @@ const TwitterSchedulerDashboard: React.FC = () => {
                 </div>
                 <div className="text-xs text-gray-600">남은 호출</div>
               </div>
+              
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-600">
+                  🕘 9:00
+                </div>
+                <div className="text-xs text-gray-600">자동 수집</div>
+              </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-blue-600">
                   {Math.round(status.api_usage.daily_average)}
@@ -241,7 +248,7 @@ const TwitterSchedulerDashboard: React.FC = () => {
                 <span>수집 중...</span>
               </div>
             ) : (
-              '지금 수집 실행'
+              '🚀 지금 수집 (수동)'
             )}
           </button>
         </div>

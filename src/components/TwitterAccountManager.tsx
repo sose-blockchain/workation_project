@@ -257,9 +257,13 @@ const TwitterAccountManager: React.FC = () => {
                   {/* 계정 정보 */}
                   <div className="flex items-start space-x-3">
                     <img
-                      src={account.profile_image_url}
+                      src={account.profile_image_url || '/default-avatar.png'}
                       alt={account.name}
                       className="w-12 h-12 rounded-full"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/default-avatar.png';
+                      }}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">

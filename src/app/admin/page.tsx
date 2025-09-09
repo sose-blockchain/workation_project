@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import TwitterSchedulerDashboard from '@/components/TwitterSchedulerDashboard';
 import TwitterAccountManager from '@/components/TwitterAccountManager';
 
 export default function AdminPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'scheduler' | 'accounts'>('scheduler');
 
   return (
@@ -148,7 +150,7 @@ export default function AdminPage() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => router.push('/')}
               className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <span className="mr-2">🏠</span>
