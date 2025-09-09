@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Workation Project',
-  description: 'React 웹사이트 서비스',
+  title: '크립토 프로젝트 리서치',
+  description: '크립토 프로젝트 분석 및 관리 플랫폼',
 }
 
 export default function RootLayout({

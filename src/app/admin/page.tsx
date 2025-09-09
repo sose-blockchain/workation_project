@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import TwitterSchedulerDashboard from '@/components/TwitterSchedulerDashboard';
 import TwitterAccountManager from '@/components/TwitterAccountManager';
 
@@ -14,6 +15,13 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="mb-8">
+          {/* 브레드크럼 */}
+          <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
+            <Link href="/" className="hover:text-blue-600 transition-colors">홈</Link>
+            <span>/</span>
+            <span className="text-gray-900">관리자</span>
+          </div>
+          
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             관리자 대시보드
           </h1>
@@ -149,13 +157,13 @@ export default function AdminPage() {
             🔗 빠른 링크
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button
-              onClick={() => router.push('/')}
+            <Link
+              href="/"
               className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <span className="mr-2">🏠</span>
               메인 페이지
-            </button>
+            </Link>
             <a 
               href="/api/twitter-scheduler?action=status"
               target="_blank"
