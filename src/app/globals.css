@@ -1,6 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* 버튼 클릭 문제 해결용 CSS */
+.nav-button {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+.nav-button:hover {
+  cursor: pointer !important;
+}
+
+.nav-button:active {
+  cursor: pointer !important;
+  transform: scale(0.95) !important;
+}
+
+/* 전역 포인터 이벤트 강제 활성화 */
+button[type="button"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
 
 :root {
   --foreground: #000000;

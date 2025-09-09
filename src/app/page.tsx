@@ -368,24 +368,46 @@ ORDER BY month DESC;
           <div className="flex items-center space-x-3">
             {/* 관리자 대시보드 링크 */}
             <button
+              type="button"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 console.log('관리자 버튼 클릭됨');
-                window.location.href = '/admin';
+                try {
+                  window.location.href = '/admin';
+                } catch (error) {
+                  console.error('네비게이션 오류:', error);
+                  window.open('/admin', '_self');
+                }
               }}
-              className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+              style={{ 
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                zIndex: 1000
+              }}
+              className="nav-button flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 select-none"
             >
               <span className="mr-1">⚙️</span>
               관리자
             </button>
             
             <button
+              type="button"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 console.log('홈 버튼 클릭됨');
-                window.location.href = '/';
+                try {
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('네비게이션 오류:', error);
+                  window.open('/', '_self');
+                }
               }}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+              style={{ 
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                zIndex: 1000
+              }}
+              className="nav-button inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 select-none"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

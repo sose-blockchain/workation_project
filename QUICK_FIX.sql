@@ -1,9 +1,18 @@
 -- 🚨 즉시 실행 - Twitter 계정 관리 오류 해결 SQL
 -- 이 SQL은 모든 누락된 컬럼을 안전하게 추가합니다
 
--- 1. 누락된 created_at_twitter 컬럼 추가 (핵심 문제 해결)
+-- 1. 누락된 컬럼들 추가 (핵심 문제 해결)
 ALTER TABLE twitter_accounts 
 ADD COLUMN IF NOT EXISTS created_at_twitter TIMESTAMP;
+
+ALTER TABLE twitter_accounts 
+ADD COLUMN IF NOT EXISTS following_count INTEGER DEFAULT 0;
+
+ALTER TABLE twitter_accounts 
+ADD COLUMN IF NOT EXISTS tweet_count INTEGER DEFAULT 0;
+
+ALTER TABLE twitter_accounts 
+ADD COLUMN IF NOT EXISTS user_id VARCHAR(255);
 
 -- 2. 스케줄러 관련 컬럼들 추가
 ALTER TABLE twitter_accounts 

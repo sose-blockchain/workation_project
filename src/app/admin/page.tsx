@@ -15,8 +15,22 @@ export default function AdminPage() {
           {/* 브레드크럼 */}
           <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
             <button 
-              onClick={() => window.location.href = '/'}
-              className="hover:text-blue-600 transition-colors cursor-pointer underline"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('브레드크럼 홈 클릭됨');
+                try {
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('네비게이션 오류:', error);
+                  window.open('/', '_self');
+                }
+              }}
+              style={{ 
+                cursor: 'pointer',
+                pointerEvents: 'auto'
+              }}
+              className="hover:text-blue-600 focus:text-blue-600 transition-colors underline focus:outline-none"
             >
               홈
             </button>
@@ -160,12 +174,23 @@ export default function AdminPage() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button
+              type="button"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 console.log('메인 페이지 버튼 클릭됨');
-                window.location.href = '/';
+                try {
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('네비게이션 오류:', error);
+                  window.open('/', '_self');
+                }
               }}
-              className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+              style={{ 
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                zIndex: 1000
+              }}
+              className="nav-button flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 transform hover:scale-105 active:scale-95 select-none"
             >
               <span className="mr-2">🏠</span>
               메인 페이지
