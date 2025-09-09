@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import ProjectSearch from '@/components/ProjectSearch'
 import ProjectDetail from '@/components/ProjectDetail'
 import ProjectSidebar from '@/components/ProjectSidebar'
@@ -13,7 +11,6 @@ import { getEnhancedProjectInfo } from '@/lib/enhancedProjectSearch'
 import { twitterService, TwitterService } from '@/lib/twitterService'
 
 export default function HomePage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [message, setMessage] = useState('')
@@ -365,29 +362,36 @@ ORDER BY month DESC;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            
-            <h1 className="text-xl font-bold text-gray-800">프로젝트 관리</h1>
+          
           </div>
           
           <div className="flex items-center space-x-3">
             {/* 관리자 대시보드 링크 */}
-            <Link 
-              href="/admin"
-              className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('관리자 버튼 클릭됨');
+                window.location.href = '/admin';
+              }}
+              className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
             >
               <span className="mr-1">⚙️</span>
               관리자
-            </Link>
+            </button>
             
-            <Link 
-              href="/"
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('홈 버튼 클릭됨');
+                window.location.href = '/';
+              }}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               홈으로
-            </Link>
+            </button>
           </div>
         </div>
 

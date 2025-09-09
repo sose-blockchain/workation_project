@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import TwitterSchedulerDashboard from '@/components/TwitterSchedulerDashboard';
 import TwitterAccountManager from '@/components/TwitterAccountManager';
 
 export default function AdminPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'scheduler' | 'accounts'>('scheduler');
 
   return (
@@ -17,7 +14,12 @@ export default function AdminPage() {
         <div className="mb-8">
           {/* 브레드크럼 */}
           <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
-            <Link href="/" className="hover:text-blue-600 transition-colors">홈</Link>
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="hover:text-blue-600 transition-colors cursor-pointer underline"
+            >
+              홈
+            </button>
             <span>/</span>
             <span className="text-gray-900">관리자</span>
           </div>
@@ -157,13 +159,17 @@ export default function AdminPage() {
             🔗 빠른 링크
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link
-              href="/"
-              className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('메인 페이지 버튼 클릭됨');
+                window.location.href = '/';
+              }}
+              className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
             >
               <span className="mr-2">🏠</span>
               메인 페이지
-            </Link>
+            </button>
             <a 
               href="/api/twitter-scheduler?action=status"
               target="_blank"
