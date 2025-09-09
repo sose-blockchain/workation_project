@@ -48,111 +48,30 @@ WHERE p.name ILIKE '%${projectName}%';
 
 2. **12개월 월별 트렌드 분석:**
 \`\`\`sql
+-- 최근 12개월 월별 메시지 볼륨
 SELECT 
-  TO_CHAR(DATE_TRUNC('month', dks.date), 'YYYY-MM') as month,
-  SUM(dks.mention_count) as total_mentions,
-  ROUND(AVG(dks.sentiment_score)::numeric, 3) as avg_sentiment,
-  COUNT(DISTINCT dks.channel_id) as active_channels,
-  MAX(dks.date) as last_update
-FROM daily_keyword_stats dks
-JOIN tracking_keywords tk ON dks.keyword_id = tk.id
+  DATE_TRUNC('month', cm.created_at) as month,
+  COUNT(*) as message_count,
+  COUNT(DISTINCT cm.channel_id) as active_channels,
+  COUNT(DISTINCT cm.author_id) as unique_authors,
+  AVG(cm.message_length) as avg_message_length,
+  COUNT(CASE WHEN cm.sentiment_score > 0.5 THEN 1 END) as positive_messages,
+  COUNT(CASE WHEN cm.sentiment_score < -0.5 THEN 1 END) as negative_messages
+FROM channel_messages cm
+JOIN message_keywords mk ON cm.id = mk.message_id
+JOIN tracking_keywords tk ON mk.keyword_id = tk.id
 JOIN project_keywords pk ON tk.id = pk.keyword_id
 JOIN projects p ON pk.project_id = p.id
 WHERE p.name ILIKE '%${projectName}%'
-  AND dks.date >= CURRENT_DATE - INTERVAL '12 months'
-GROUP BY DATE_TRUNC('month', dks.date)
+  AND cm.created_at >= NOW() - INTERVAL '12 months'
+GROUP BY DATE_TRUNC('month', cm.created_at)
 ORDER BY month DESC;
 \`\`\`
 
-3. **TOP 활성 채널 분석:**
-\`\`\`sql
-SELECT 
-  c.channel_name,
-  c.channel_title,
-  ROUND(AVG(dpcs.sentiment_score)::numeric, 3) as avg_sentiment,
-  SUM(dpcs.mention_count) as total_mentions,
-  MAX(dpcs.date) as last_mention_date,
-  MIN(dpcs.date) as first_mention_date
-FROM daily_project_channel_scores dpcs
-JOIN channels c ON dpcs.channel_id = c.id
-JOIN projects p ON dpcs.project_id = p.id
-WHERE p.name ILIKE '%${projectName}%'
-  AND dpcs.date >= CURRENT_DATE - INTERVAL '1 year'
-GROUP BY c.id, c.channel_name, c.channel_title
-HAVING SUM(dpcs.mention_count) >= 10
-ORDER BY total_mentions DESC
-LIMIT 15;
-\`\`\`
+결과는 간결하고 실무적인 인사이트 중심으로 정리해주세요.
+`;
 
-4. **최근 30일 일별 활동:**
-\`\`\`sql
-SELECT 
-  dks.date,
-  SUM(dks.mention_count) as daily_mentions,
-  ROUND(AVG(dks.sentiment_score)::numeric, 3) as daily_sentiment,
-  COUNT(DISTINCT dks.channel_id) as daily_channels
-FROM daily_keyword_stats dks
-JOIN tracking_keywords tk ON dks.keyword_id = tk.id
-JOIN project_keywords pk ON tk.id = pk.keyword_id
-JOIN projects p ON pk.project_id = p.id
-WHERE p.name ILIKE '%${projectName}%'
-  AND dks.date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY dks.date
-ORDER BY dks.date DESC;
-\`\`\`
-
-5. **실제 최근 메시지 샘플:**
-\`\`\`sql
-SELECT 
-  m.message_text,
-  m.timestamp,
-  c.channel_name,
-  LENGTH(m.message_text) as msg_length
-FROM messages m
-JOIN channels c ON m.channel_id = c.id
-WHERE (m.message_text ILIKE '%${projectName}%' 
-       OR m.message_text ILIKE '%${tokenSymbol || projectName}%')
-  AND m.timestamp >= CURRENT_DATE - INTERVAL '7 days'
-  AND LENGTH(m.message_text) > 20
-ORDER BY m.timestamp DESC
-LIMIT 25;
-\`\`\`
-
-**분석 결과 정리:**
-위 쿼리들을 실행한 후, 다음 형식으로 월별 리포트를 생성해주세요:
-
-📊 **${projectName} 텔레그램 커뮤니티 분석 (최근 12개월)**
-
-**월별 트렌드:**
-- 각 월의 언급 수, 감정 점수, 활성 채널 수
-- 주요 변화점과 패턴 식별
-
-**활성 채널 분석:**
-- 가장 활발한 채널들과 각각의 특성
-- 공식/커뮤니티 채널별 반응 차이
-
-**최근 30일 동향:**
-- 일별 활동 패턴
-- 감정 점수 변화
-- 급상승/급하락 구간 분석
-
-**실제 커뮤니티 반응:**
-- 최근 메시지들에서 추출한 주요 관심사
-- 긍정/부정 피드백 내용
-
-**투자 인사이트:**
-- 커뮤니티 성장/감소 신호
-- 감정 변화의 주요 원인
-- 향후 관심사 예측
-
-이 모든 정보를 종합해서 투자자 관점에서 유의미한 인사이트를 제공해주세요.
-      `
-      
-      console.log('📱 MCP 고도화 분석 요청 전송')
-      console.log(`🔍 분석 대상: ${projectName} (${tokenSymbol || 'N/A'})`)
-      
-      // 실제로는 여기서 Claude가 MCP를 통해 위의 쿼리들을 실행하고 분석
-      
+      // MCP 분석 결과 반환 (실제로는 Claude MCP API 호출)
       return {
         project_name: projectName,
         token_symbol: tokenSymbol,
@@ -224,8 +143,6 @@ LIMIT 25;
         )
         
         if (exactMatch) {
-          console.log(`✅ 정확히 일치하는 프로젝트 발견: ${exactMatch.name}`)
-          setSelectedProject(exactMatch)
           setMessage(`"${exactMatch.name}" 프로젝트가 이미 존재합니다.`)
           setTimeout(() => setMessage(''), 3000)
           return
@@ -243,19 +160,14 @@ LIMIT 25;
         .select()
         .single()
 
-      if (projectError) {
-        if (projectError.code === '23505') { // Unique constraint violation
+      if (projectError || !newProject?.id) {
+        if (projectError?.code === '23505') { // unique constraint violation
           setMessage(`"${enhancedResult.project.name}" 프로젝트가 이미 존재합니다.`)
           setTimeout(() => setMessage(''), 3000)
           return
         }
-        throw projectError
+        throw projectError || new Error('프로젝트 생성 실패')
       }
-
-
-
-      // 투자 데이터는 현재 프리미엄 서비스 예정으로 저장하지 않음
-      // CoinGecko Pro 구독 시 추가 데이터 저장 예정
 
       // 2. 트위터 정보가 발견된 경우 자동으로 수집 (여러 후보 시도)
       let twitterMessage = '';
@@ -264,14 +176,19 @@ LIMIT 25;
         
         let successfulAccount = null;
         
+        // 여러 트위터 URL 후보 시도
         for (const twitterUrl of enhancedResult.project.detected_twitter_urls) {
           try {
             const handle = TwitterService.extractTwitterHandle(twitterUrl);
-            if (!handle) continue;
+            if (!handle) {
+              console.warn(`⚠️ 유효하지 않은 트위터 URL: ${twitterUrl}`);
+              continue;
+            }
             
-            console.log(`🐦 트위터 계정 시도: @${handle}`);
+            console.log(`🔍 트위터 계정 수집 시도: @${handle}`);
+            
             const twitterResult = await twitterService.createOrUpdateTwitterAccount({
-              project_id: newProject.id,
+              project_id: newProject.id!,
               screen_name: handle,
               fetch_timeline: true
             });
@@ -279,27 +196,6 @@ LIMIT 25;
             if (twitterResult.found && twitterResult.account) {
               successfulAccount = { handle, account: twitterResult.account };
               twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
-              console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
-              
-              // 팀원 정보도 함께 수집
-              try {
-                console.log(`🔍 팀원 정보 수집 시작: @${handle}`);
-                const teamResult = await twitterService.collectAndSaveTeamMembers(
-                  newProject.id,
-                  twitterResult.account.id,
-                  handle
-                );
-                
-                if (teamResult.success && teamResult.saved_members.length > 0) {
-                  twitterMessage += ` (팀원 ${teamResult.saved_members.length}명 수집 완료)`;
-                  console.log(`✅ 팀원 정보 수집 성공: ${teamResult.saved_members.length}명`);
-                } else {
-                  console.log(`📭 팀원 정보 없음 또는 수집 실패: @${handle}`);
-                }
-              } catch (teamError) {
-                console.error(`❌ 팀원 정보 수집 중 오류: @${handle}`, teamError);
-                // 팀원 정보 수집 실패는 전체 프로세스를 중단시키지 않음
-              }
               
               // 텔레그램 커뮤니티 분석도 함께 실행
               try {
@@ -328,40 +224,23 @@ LIMIT 25;
         // 기존 단일 URL 처리 (하위 호환성)
         try {
           const handle = TwitterService.extractTwitterHandle(enhancedResult.project.detected_twitter_url);
-          if (handle) {
-            console.log(`🐦 트위터 계정 자동 수집 시작: @${handle}`);
-            const twitterResult = await twitterService.createOrUpdateTwitterAccount({
-              project_id: newProject.id,
-              screen_name: handle,
-              fetch_timeline: true
-            });
-            
-            if (twitterResult.found && twitterResult.account) {
-              twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
-              console.log(`✅ 트위터 계정 자동 수집 성공: @${handle}`);
-              
-              // 팀원 정보도 함께 수집
-              try {
-                console.log(`🔍 팀원 정보 수집 시작: @${handle}`);
-                const teamResult = await twitterService.collectAndSaveTeamMembers(
-                  newProject.id,
-                  twitterResult.account.id,
-                  handle
-                );
-                
-                if (teamResult.success && teamResult.saved_members.length > 0) {
-                  twitterMessage += ` (팀원 ${teamResult.saved_members.length}명 수집 완료)`;
-                  console.log(`✅ 팀원 정보 수집 성공: ${teamResult.saved_members.length}명`);
-                } else {
-                  console.log(`📭 팀원 정보 없음 또는 수집 실패: @${handle}`);
-                }
-              } catch (teamError) {
-                console.error(`❌ 팀원 정보 수집 중 오류: @${handle}`, teamError);
-                // 팀원 정보 수집 실패는 전체 프로세스를 중단시키지 않음
-              }
-            } else {
-              console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
-            }
+          if (!handle) {
+            console.warn(`⚠️ 유효하지 않은 트위터 URL: ${enhancedResult.project.detected_twitter_url}`);
+            return;
+          }
+          
+          console.log(`🔍 트위터 계정 수집 시작: @${handle}`);
+          
+          const twitterResult = await twitterService.createOrUpdateTwitterAccount({
+            project_id: newProject.id!,
+            screen_name: handle,
+            fetch_timeline: true
+          });
+          
+          if (twitterResult.found && twitterResult.account) {
+            twitterMessage = ` (트위터: @${handle} 정보 수집 완료)`;
+          } else {
+            console.warn(`⚠️ 트위터 계정 수집 실패: @${handle} - ${twitterResult.error || '원인 불명'}`);
           }
         } catch (twitterError) {
           console.error('❌ 트위터 정보 자동 수집 중 오류:', twitterError);
@@ -371,14 +250,12 @@ LIMIT 25;
 
       const baseMessage = enhancedResult.data_sources.basic_info.includes('CoinGecko') 
         ? '프로젝트가 성공적으로 저장되었습니다! (CoinGecko API로 정확한 프로젝트명/심볼 확인)'
-        : '프로젝트가 성공적으로 저장되었습니다!';
+        : '프로젝트가 성공적으로 저장되었습니다! (AI로 프로젝트 정보 생성)';
       
       setMessage(baseMessage + twitterMessage)
-      console.log(`✅ 프로젝트 저장 완료: ${newProject.name}`)
       
-      // 새 프로젝트를 선택하고 목록 새로고침
-      setSelectedProject(newProject)
-      await loadProjects() // 전체 목록 새로고침으로 일관성 유지
+      // 프로젝트 목록 새로고침
+      await loadProjects()
       
       // 3초 후 메시지 제거
       setTimeout(() => {
@@ -448,7 +325,6 @@ LIMIT 25;
 
       setMessage('프로젝트가 성공적으로 삭제되었습니다!')
       await loadProjects() // 목록 새로고침
-      setSelectedProject(null)
       
       setTimeout(() => {
         setMessage('')
@@ -475,16 +351,32 @@ LIMIT 25;
       {/* 메인 컨텐츠 */}
       <div className={`min-h-screen flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
         {/* 상단 헤더 */}
-        <div className="flex justify-end items-center p-4">
-          <button 
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            홈으로
-          </button>
+        <div className="flex justify-between items-center p-4">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-gray-800">Workation</h1>
+            <span className="text-sm text-gray-500">크립토 프로젝트 리서치 플랫폼</span>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            {/* 관리자 대시보드 링크 */}
+            <a
+              href="/admin"
+              className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <span className="mr-1">⚙️</span>
+              관리자
+            </a>
+            
+            <button 
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              홈으로
+            </button>
+          </div>
         </div>
 
         {/* 메시지 표시 */}
@@ -495,7 +387,7 @@ LIMIT 25;
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             {message}
-        </div>
+          </div>
         )}
 
         {/* Google 스타일 중앙 정렬 검색 */}
@@ -526,7 +418,7 @@ LIMIT 25;
               </div>
             </div>
           )}
-            </div>
+        </div>
 
         {/* 하단 링크 */}
         <div className="py-3 bg-gray-50 border-t">

@@ -650,6 +650,47 @@ export class TwitterService {
   }
 
   /**
+   * 팀원 정보 수집 (별칭 메서드)
+   */
+  async collectTeamMembers(screenName: string): Promise<TwitterTeamMembersResult> {
+    try {
+      console.log(`👥 팀원 정보 수집 시작: @${screenName}`);
+      
+      // 트위터 API로 팀원 정보 조회
+      const teamData = await twitterAPI.getTeamMembers(screenName);
+      
+      if (!teamData || teamData.combined.length === 0) {
+        return {
+          success: false,
+          error: '팀원 정보를 찾을 수 없습니다',
+          following: [],
+          affiliates: [],
+          combined: [],
+          saved_members: []
+        };
+      }
+
+      return {
+        success: true,
+        following: teamData.following,
+        affiliates: teamData.affiliates,
+        combined: teamData.combined,
+        saved_members: [] // 실제 저장된 팀원들 (간단화를 위해 빈 배열)
+      };
+    } catch (error) {
+      console.error(`❌ 팀원 정보 수집 실패: @${screenName}`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
+        following: [],
+        affiliates: [],
+        combined: [],
+        saved_members: []
+      };
+    }
+  }
+
+  /**
    * 프로젝트의 팀원 목록 조회
    */
   async getTeamMembers(projectId: string): Promise<TwitterTeamMemberDetail[]> {

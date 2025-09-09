@@ -6,7 +6,7 @@
 **기술 스택**: Next.js 14, React 18, TypeScript, Tailwind CSS, Supabase PostgreSQL  
 **배포 환경**: Vercel  
 **개발 기간**: 2025년 1월  
-**주요 기능**: 암호화폐 프로젝트 정보 검색, Twitter 활동 분석, 투자 정보 관리
+**주요 기능**: 암호화폐 프로젝트 정보 검색, Twitter 활동 분석, 투자 정보 관리, Twitter 계정 관리, 스케줄링 시스템
 
 ---
 
@@ -41,7 +41,11 @@
 src/
 ├── app/
 │   ├── api/
-│   │   └── team-members/           # Twitter 팀원 정보 API
+│   │   ├── team-members/           # Twitter 팀원 정보 API
+│   │   ├── twitter-accounts/       # Twitter 계정 관리 API
+│   │   └── twitter-scheduler/      # Twitter 스케줄러 API
+│   ├── admin/                      # 관리자 대시보드
+│   │   └── page.tsx               # 관리자 페이지
 │   ├── globals.css                 # 전역 스타일
 │   ├── layout.tsx                  # 루트 레이아웃
 │   └── page.tsx                    # 메인 페이지
@@ -50,6 +54,9 @@ src/
 │   ├── PremiumInvestmentNotice.tsx # 프리미엄 안내
 │   ├── ProjectDetail.tsx           # 프로젝트 상세 정보
 │   ├── ProjectSearch.tsx           # 프로젝트 검색
+│   ├── TwitterAccountManager.tsx   # Twitter 계정 관리
+│   ├── TwitterDataAnalysis.tsx     # DB 기반 Twitter 데이터 분석
+│   └── TwitterSchedulerDashboard.tsx # Twitter 스케줄러 대시보드
 │   ├── ProjectSidebar.tsx          # 사이드바
 │   ├── TelegramCommunityInfo.tsx   # 텔레그램 분석 (개발 중단)
 │   ├── TeamMembersInfo.tsx         # 팀원 정보 표시

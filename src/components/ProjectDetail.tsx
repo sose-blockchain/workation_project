@@ -9,6 +9,8 @@ import TwitterInfo from './TwitterInfo'
 import TeamMembersInfo from './TeamMembersInfo'
 import TelegramCommunityInfo from './TelegramCommunityInfo'
 import TwitterActivityAnalysis from './TwitterActivityAnalysis'
+import TwitterDataAnalysis from './TwitterDataAnalysis'
+import TwitterSchedulerDashboard from './TwitterSchedulerDashboard'
 
 
 interface ProjectDetailProps {
@@ -593,6 +595,17 @@ export default function ProjectDetail({
                 />
               </div>
 
+              {/* AI 기반 트위터 데이터 분석 (스마트 통합) */}
+              {project.detected_twitter_url && (
+                <div className="pt-4 border-t">
+                  <TwitterDataAnalysis 
+                    projectId={project.id}
+                    projectName={project.name}
+                    screenName={project.detected_twitter_url.replace(/.*\//, '').replace('@', '')}
+                  />
+                </div>
+              )}
+
               {/* 팀원 정보 섹션 */}
               <div className="pt-4 border-t">
                 <TeamMembersInfo 
@@ -600,16 +613,6 @@ export default function ProjectDetail({
                   projectName={project.name}
                 />
               </div>
-
-              {/* Twitter 활동 분석 섹션 */}
-              {project.detected_twitter_url && (
-                <div className="pt-4 border-t">
-                  <TwitterActivityAnalysis 
-                    screenName={project.detected_twitter_url.replace(/.*\//, '').replace('@', '')}
-                    projectName={project.name}
-                  />
-                </div>
-              )}
 
               {/* 텔레그램 커뮤니티 정보 섹션 */}
               <div className="pt-4 border-t">
