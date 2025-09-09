@@ -341,7 +341,7 @@ const TwitterSchedulerDashboard: React.FC = () => {
                   </div>
                   
                   {item.result.success && (
-                    <div className="flex space-x-4 text-sm text-gray-600">
+                    <div className="flex space-x-4 text-sm text-gray-700">
                       <span>📥 {item.result.tweets_collected}개 수집</span>
                       <span>🆕 {item.result.new_tweets}개 신규</span>
                       <span>👥 {item.result.updated_followers.toLocaleString()} 팔로워</span>

@@ -185,7 +185,7 @@ const TwitterAccountManager: React.FC = () => {
               value={newAccountInput}
               onChange={(e) => setNewAccountInput(e.target.value)}
               placeholder="@username 또는 https://twitter.com/username"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
             />
           </div>
           
@@ -198,7 +198,7 @@ const TwitterAccountManager: React.FC = () => {
               value={projectNameInput}
               onChange={(e) => setProjectNameInput(e.target.value)}
               placeholder="프로젝트명 (옵션)"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
             />
           </div>
           
@@ -313,16 +313,16 @@ const TwitterAccountManager: React.FC = () => {
                     <div className="text-gray-500">활동도</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-medium text-gray-600 text-xs">
+                    <div className="font-medium text-gray-700 text-xs">
                       {formatDate(account.stats.first_tweet_date)}
                     </div>
-                    <div className="text-gray-500">첫 수집</div>
+                    <div className="text-gray-600">첫 수집</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-medium text-gray-600 text-xs">
+                    <div className="font-medium text-gray-700 text-xs">
                       {formatDate(account.last_updated)}
                     </div>
-                    <div className="text-gray-500">마지막 업데이트</div>
+                    <div className="text-gray-600">마지막 업데이트</div>
                   </div>
                 </div>
 

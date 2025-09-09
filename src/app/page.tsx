@@ -354,21 +354,20 @@ ORDER BY month DESC;
         <div className="flex justify-between items-center p-4">
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold text-gray-800">Workation</h1>
-            <span className="text-sm text-gray-500">크립토 프로젝트 리서치 플랫폼</span>
           </div>
           
           <div className="flex items-center space-x-3">
             {/* 관리자 대시보드 링크 */}
-            <a
-              href="/admin"
+            <button
+              onClick={() => window.location.href = '/admin'}
               className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <span className="mr-1">⚙️</span>
               관리자
-            </a>
+            </button>
             
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => window.location.href = '/'}
               className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

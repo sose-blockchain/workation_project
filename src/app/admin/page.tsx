@@ -147,13 +147,13 @@ export default function AdminPage() {
             🔗 빠른 링크
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a 
-              href="/"
+            <button
+              onClick={() => window.location.href = '/'}
               className="flex items-center p-3 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <span className="mr-2">🏠</span>
               메인 페이지
-            </a>
+            </button>
             <a 
               href="/api/twitter-scheduler?action=status"
               target="_blank"
