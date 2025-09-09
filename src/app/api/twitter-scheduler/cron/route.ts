@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const result = await SchedulerHelpers.collectAll();
     
     // 5. 성공 로깅
-    console.log(`✅ 자동 수집 완료: ${result.successful}/${result.total_accounts} 성공`);
+    console.log(`✅ 자동 수집 완료: ${result.successful}/${result.total_accounts} 성공, ${result.failed}개 실패, ${result.skipped}개 건너뛰기`);
     
     // 6. 결과 반환
     return NextResponse.json({
@@ -62,12 +62,12 @@ export async function GET(request: NextRequest) {
         total_accounts: result.total_accounts,
         successful: result.successful,
         failed: result.failed,
-        total_tweets_collected: result.total_tweets,
+        skipped: result.skipped,
         api_calls_used: result.api_calls_used
       },
       api_usage: apiUsage,
       next_scheduled: '내일 오전 9시',
-      message: `자동 수집 완료: ${result.successful}개 계정에서 ${result.total_tweets}개 트윗 수집`
+      message: `자동 수집 완료: ${result.successful}개 계정 성공, ${result.failed}개 실패, ${result.skipped}개 건너뛰기`
     });
 
   } catch (error) {
