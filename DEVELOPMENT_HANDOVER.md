@@ -6,7 +6,7 @@
 **기술 스택**: Next.js 14, React 18, TypeScript, Tailwind CSS, Supabase PostgreSQL  
 **배포 환경**: Vercel  
 **개발 기간**: 2025년 1월  
-**주요 기능**: 암호화폐 프로젝트 정보 검색, Twitter 활동 분석, 투자 정보 관리, Twitter 계정 관리, 스케줄링 시스템
+**주요 기능**: 암호화폐 프로젝트 정보 검색, AI 주별 Twitter 분석, 투자 정보 관리, Twitter 계정 관리, 스케줄링 시스템, 스마트 캐싱 시스템
 
 ---
 
@@ -79,7 +79,51 @@ src/
 
 ## 🔧 주요 개발 작업 내역
 
-### 1. CoinGecko API 마이그레이션 (RapidAPI → 공식 API)
+### 1. AI 주별 트위터 분석 시스템 (NEW v2.1.0)
+
+**작업 일시**: 2025년 1월 28일  
+**작업 목적**: Google Gemini AI를 활용한 주별 트윗 심층 분석 시스템 구축
+
+#### 새로 추가된 파일:
+- `src/app/api/twitter-analysis/[projectId]/route.ts` - 주별 데이터 조회 API
+- `src/app/api/twitter-analysis/[projectId]/ai-weekly/route.ts` - AI 분석 API
+- `TWITTER_WEEKLY_ANALYSIS_SCHEMA.sql` - 새로운 DB 스키마
+- `AI_WEEKLY_TWITTER_ANALYSIS_GUIDE.md` - 시스템 사용 가이드
+
+#### 주요 변경된 파일:
+- `src/components/TwitterDataAnalysis.tsx` - 1004줄로 대폭 확장, 주별 분석 UI 추가
+
+#### 핵심 기능:
+- **실시간 데이터 분석**: Supabase `twitter_timeline` 테이블 직접 연동
+- **AI 심층 분석**: Google Gemini를 통한 주별 감정/트렌드/이벤트 분석
+- **스마트 캐싱**: 분석 결과 DB 저장으로 중복 계산 방지
+- **인터랙티브 UI**: 확장 가능한 주별 카드 인터페이스
+- **성능 로깅**: API 사용량 및 처리 시간 자동 추적
+
+#### 새로운 DB 테이블:
+```sql
+-- 주별 AI 분석 결과
+twitter_weekly_analysis (
+  id, project_id, week_start, week_end,
+  analysis_result: jsonb,  -- AI 분석 전체 결과
+  sentiment, activity_level, main_topics: text[]
+)
+
+-- 전체 트렌드 분석 캐시
+twitter_trend_analysis (
+  id, project_id, analysis_start_date, analysis_end_date,
+  trends_result: jsonb,  -- 트렌드 분석 결과
+  common_topics: text[], dominant_sentiment
+)
+
+-- AI 분석 로그
+twitter_ai_analysis_logs (
+  id, project_id, analysis_type,
+  api_calls_made, processing_time_seconds, cache_hit
+)
+```
+
+### 2. CoinGecko API 마이그레이션 (RapidAPI → 공식 API)
 
 **작업 일시**: 2025년 1월 최종  
 **작업 목적**: 불안정한 RapidAPI에서 안정적인 공식 API로 전환
@@ -362,6 +406,9 @@ export async function POST(request: Request) {
 NEXT_PUBLIC_TWITTER_API_KEY=cb36cde707msh4ccb3ae744a2128p1407b5jsn3297ae66c2ef
 NEXT_PUBLIC_TWITTER_API_HOST=twitter-api45.p.rapidapi.com
 
+# Google Gemini AI (NEW v2.1.0)
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+
 # CoinGecko API (공식)
 NEXT_PUBLIC_COINGECKO_API_KEY=your_demo_api_key
 NEXT_PUBLIC_COINGECKO_PRO_API_KEY=your_pro_api_key  # 선택사항
@@ -369,9 +416,6 @@ NEXT_PUBLIC_COINGECKO_PRO_API_KEY=your_pro_api_key  # 선택사항
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Google Gemini AI
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Vercel 환경변수 설정:

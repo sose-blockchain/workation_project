@@ -10,11 +10,21 @@
 - SNS 데이터 분석을 통한 프로젝트 영향도 측정
 - 노션 연동을 통한 체계적인 리서치 문서 생성
 
-### ✨ 새로운 기능들 (v2.0.0 - 2025.01.28)
+### ✨ 최신 기능들 (v2.1.0 - 2025.01.28)
+- **🧠 AI 주별 트위터 분석**: Google Gemini를 활용한 주별 심층 트윗 분석
+  - 각 주별 주요 화제 및 트렌드 자동 추출
+  - 감정 분석 및 커뮤니티 반응 인사이트
+  - 주요 이벤트 및 발표 타임라인 정리
+  - AI 기반 개선 권장사항 제공
+- **📊 스마트 캐싱 시스템**: 분석 결과 자동 저장으로 성능 최적화
+- **🎯 인터랙티브 UI**: 확장 가능한 주별 카드 및 트렌드 시각화
+- **⚡ 실시간 분석**: Supabase 실제 트윗 데이터 기반 분석
+- **📈 트렌드 추적**: 최고 활동 주, 참여도 분석, 공통 화제 추출
+
+### 🔧 기존 기능들 (v2.0.0)
 - **🤖 스마트 Twitter 스케줄러**: RapidAPI 제한 최적화로 효율적 데이터 수집
 - **⚙️ 관리자 대시보드**: Twitter 계정 관리 및 실시간 모니터링 
 - **📊 API 사용량 최적화**: 월 1,000회 제한 내 우선순위 기반 스마트 관리
-- **🧠 AI 기반 데이터 분석**: DB 누적 데이터로 정확한 감정/트렌드 분석
 - **💼 완전 자동화**: 계정 등록 → 스케줄링 → 분석 → 표시 전 과정 자동화
 
 ### 🔧 기존 기능들 (v1.1.0)
@@ -45,7 +55,9 @@
   - 텍스트 생성 및 분석
 
 ### 외부 API 연동
-- **Twitter API**: 프로젝트 및 팀원 SNS 데이터 수집
+- **Twitter API (RapidAPI)**: 프로젝트 및 팀원 SNS 데이터 수집
+- **CoinGecko API**: 암호화폐 시장 데이터 및 프로젝트 정보
+- **CryptoRank API**: 투자 라운드 및 펀딩 정보  
 - **Notion API**: 리서치 결과 문서 자동 생성
 
 ### 배포 & 버전 관리
@@ -125,17 +137,65 @@ projects (
 )
 ```
 
-#### SNS 데이터 테이블
+#### 트위터 계정 관리
 ```sql
-sns_data (
+twitter_accounts (
   id: uuid PRIMARY KEY,
   project_id: uuid REFERENCES projects(id),
-  twitter_url: text,
-  team_twitter_urls: text[],
-  follower_count: integer,
-  tweet_count: integer,
-  engagement_metrics: jsonb,
-  ai_insights: text,
+  screen_name: text NOT NULL,
+  name: text,
+  followers_count: integer,
+  activity_score: integer,
+  priority: integer DEFAULT 3,
+  api_calls_used: integer DEFAULT 0,
+  is_active: boolean DEFAULT true,
+  last_updated: timestamp,
+  created_at: timestamp
+)
+```
+
+#### 트윗 데이터
+```sql
+twitter_timeline (
+  id: uuid PRIMARY KEY,
+  twitter_account_id: uuid REFERENCES twitter_accounts(id),
+  tweet_id: text NOT NULL,
+  text: text,
+  created_at: timestamp,
+  retweet_count: integer,
+  favorite_count: integer,
+  is_retweet: boolean,
+  is_reply: boolean
+)
+```
+
+#### AI 주별 분석 (NEW v2.1.0)
+```sql
+twitter_weekly_analysis (
+  id: uuid PRIMARY KEY,
+  project_id: uuid REFERENCES projects(id),
+  week_start: date,
+  week_end: date,
+  analysis_result: jsonb,
+  sentiment: varchar(20),
+  activity_level: varchar(20),
+  main_topics: text[],
+  total_tweets: integer,
+  avg_engagement: decimal,
+  created_at: timestamp
+)
+```
+
+#### 트렌드 분석 캐시 (NEW v2.1.0)
+```sql
+twitter_trend_analysis (
+  id: uuid PRIMARY KEY,
+  project_id: uuid REFERENCES projects(id),
+  analysis_start_date: date,
+  analysis_end_date: date,
+  trends_result: jsonb,
+  common_topics: text[],
+  dominant_sentiment: varchar(20),
   created_at: timestamp
 )
 ```
