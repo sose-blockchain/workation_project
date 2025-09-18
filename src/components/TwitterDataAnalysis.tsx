@@ -301,6 +301,10 @@ const TwitterDataAnalysis: React.FC<TwitterDataAnalysisProps> = ({
                 week_label: week.week_label,
                 sentiment: week.analysis.sentiment
               })))
+              .filter((highlight, index, array) => {
+                // 텍스트 기준으로 중복 제거 (첫 번째 항목만 유지)
+                return array.findIndex(item => item.text.trim() === highlight.text.trim()) === index;
+              })
               .sort((a, b) => b.engagement - a.engagement)
               .slice(0, 5)
               .map((highlight, idx) => (
@@ -395,112 +399,62 @@ const TwitterDataAnalysis: React.FC<TwitterDataAnalysisProps> = ({
                 {/* 주별 상세 내용 (확장됨) */}
                 {selectedWeek === originalIndex && (
                   <div className="px-4 pb-4 border-t border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                      {/* 왼쪽: 분석 결과 */}
-                      <div className="space-y-4">
-                        {/* 주요 화제 */}
-                        <div>
-                          <h6 className="font-medium text-gray-700 mb-2">🎯 주요 화제</h6>
-                          <div className="flex flex-wrap gap-1">
-                            {week.analysis.main_topics.map((topic, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
-                              >
-                                {topic}
-                              </span>
-                            ))}
-                          </div>
+                    <div className="pt-4 space-y-6">
+                      {/* 주요 화제 */}
+                      <div>
+                        <h6 className="font-medium text-gray-700 mb-2">🎯 주요 화제</h6>
+                        <div className="flex flex-wrap gap-1">
+                          {week.analysis.main_topics.map((topic, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
+                            >
+                              {topic}
+                            </span>
+                          ))}
                         </div>
+                      </div>
 
-                        {/* 주요 이벤트 */}
+                      {/* 주요 이벤트 - 전폭 표시 */}
+                      <div>
+                        <h6 className="font-medium text-gray-700 mb-3">📋 주요 이벤트 (최대 10개)</h6>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {week.analysis.key_events.slice(0, 10).map((event, idx) => (
+                            <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                                  <span className="text-blue-600 text-xs font-bold">{idx + 1}</span>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm text-gray-800 leading-relaxed">{event}</p>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {new Date(week.week_start).toLocaleDateString('ko-KR', {month: 'short', day: 'numeric'})} - {new Date(week.week_end).toLocaleDateString('ko-KR', {month: 'short', day: 'numeric'})}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 하이라이트 트윗 */}
+                      {week.tweet_highlights.length > 0 && (
                         <div>
-                          <h6 className="font-medium text-gray-700 mb-3">📋 주요 이벤트</h6>
-                          <div className="space-y-3">
-                            {week.analysis.key_events.map((event, idx) => (
-                              <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg">
-                                <div className="flex items-start">
-                                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                                    <span className="text-blue-600 text-xs font-bold">{idx + 1}</span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm text-gray-800 leading-relaxed">{event}</p>
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      {new Date(week.week_start).toLocaleDateString('ko-KR', {month: 'short', day: 'numeric'})} - {new Date(week.week_end).toLocaleDateString('ko-KR', {month: 'short', day: 'numeric'})}
-                                    </div>
-                                  </div>
+                          <h6 className="font-medium text-gray-700 mb-2">⭐ 주요 트윗</h6>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {week.tweet_highlights.slice(0, 4).map((highlight, idx) => (
+                              <div key={idx} className="p-3 bg-gray-50 rounded-lg text-sm">
+                                <div className="text-gray-800 mb-1 leading-relaxed">
+                                  "{highlight.text}"
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {highlight.engagement}회 참여 · {highlight.reason}
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-
-                        {/* 커뮤니티 인사이트 */}
-                        <div>
-                          <h6 className="font-medium text-gray-700 mb-2">👥 커뮤니티 반응</h6>
-                          <p className="text-sm text-gray-600 italic">
-                            "{week.analysis.community_insights}"
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 오른쪽: 하이라이트 트윗 & 통계 */}
-                      <div className="space-y-4">
-                        {/* 통계 */}
-                        <div>
-                          <h6 className="font-medium text-gray-700 mb-2">📊 이 주의 통계</h6>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="p-2 bg-gray-50 rounded">
-                              <div className="font-medium">{week.raw_stats.original_tweets}</div>
-                              <div className="text-gray-600">오리지널 트윗</div>
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                              <div className="font-medium">{week.raw_stats.retweets}</div>
-                              <div className="text-gray-600">리트윗</div>
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                              <div className="font-medium">{week.raw_stats.replies}</div>
-                              <div className="text-gray-600">답글</div>
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                              <div className="font-medium">{week.raw_stats.avg_engagement}</div>
-                              <div className="text-gray-600">평균 참여도</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 하이라이트 트윗 */}
-                        {week.tweet_highlights.length > 0 && (
-                          <div>
-                            <h6 className="font-medium text-gray-700 mb-2">⭐ 주요 트윗</h6>
-                            <div className="space-y-2">
-                              {week.tweet_highlights.slice(0, 2).map((highlight, idx) => (
-                                <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
-                                  <div className="text-gray-800 mb-1">
-                                    "{highlight.text}"
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {highlight.engagement}회 참여 · {highlight.reason}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* AI 권장사항 */}
-                        <div>
-                          <h6 className="font-medium text-gray-700 mb-2">🎯 AI 권장사항</h6>
-                          <ul className="text-sm text-gray-600 space-y-1">
-                            {week.analysis.recommendations.slice(0, 2).map((rec, idx) => (
-                              <li key={idx} className="flex items-start">
-                                <span className="text-green-500 mr-2 mt-1">•</span>
-                                <span>{rec}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 )}
