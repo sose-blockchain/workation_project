@@ -161,7 +161,7 @@ ${tweetsText}
   "sentiment": "positive/neutral/negative 중 하나",
   "activity_level": "high/medium/low 중 하나",
   "engagement_quality": "excellent/good/average/poor 중 하나",
-  "key_events": ["이 주에 일어난 주요 이벤트나 발표 2-3개"],
+  "key_events": ["이 주에 일어난 주요 이벤트나 발표 4-5개"],
   "community_insights": "커뮤니티 반응과 참여도에 대한 한 줄 요약",
   "recommendations": ["다음 주를 위한 구체적인 제안 2-3개"]
 }

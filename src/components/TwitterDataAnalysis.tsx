@@ -417,9 +417,9 @@ const TwitterDataAnalysis: React.FC<TwitterDataAnalysisProps> = ({
 
                       {/* 주요 이벤트 - 전폭 표시 */}
                       <div>
-                        <h6 className="font-medium text-gray-700 mb-3">📋 주요 이벤트 (최대 10개)</h6>
+                        <h6 className="font-medium text-gray-700 mb-3">📋 주요 이벤트 (최대 5개)</h6>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {week.analysis.key_events.slice(0, 10).map((event, idx) => (
+                          {week.analysis.key_events.slice(0, 5).map((event, idx) => (
                             <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
                               <div className="flex items-start">
                                 <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
